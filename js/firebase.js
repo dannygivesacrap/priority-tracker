@@ -8,12 +8,24 @@ const firebaseConfig = {
     appId: CONFIG.FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// Check if config is valid (not still placeholders)
+if (firebaseConfig.apiKey.includes('PLACEHOLDER')) {
+    console.error('Firebase config not set! Check environment variables in Netlify.');
+    document.body.innerHTML = '<div style="padding: 40px; text-align: center;"><h2>Configuration Error</h2><p>Environment variables not set. Please check Netlify settings.</p></div>';
+    throw new Error('Invalid Firebase configuration');
+}
 
-// Initialize services
-const auth = firebase.auth();
-const db = firebase.firestore();
+// Initialize Firebase
+let auth, db;
+try {
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    console.log('Firebase initialized successfully');
+} catch (error) {
+    console.error('Firebase initialization error:', error);
+    throw error;
+}
 
 // Auth state
 let currentUser = null;
