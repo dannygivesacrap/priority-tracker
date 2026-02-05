@@ -1,11 +1,11 @@
-// Firebase Configuration
+// Firebase Configuration - uses values from config.js
 const firebaseConfig = {
-    apiKey: "AIzaSyB6hG0VO4m8mH5zN4s5Esyw9g-SCiD0sW4",
-    authDomain: "dannys-project-tracker.firebaseapp.com",
-    projectId: "dannys-project-tracker",
-    storageBucket: "dannys-project-tracker.firebasestorage.app",
-    messagingSenderId: "495524959522",
-    appId: "1:495524959522:web:3cdb8518f24a29624d017b"
+    apiKey: CONFIG.FIREBASE_API_KEY,
+    authDomain: CONFIG.FIREBASE_AUTH_DOMAIN,
+    projectId: CONFIG.FIREBASE_PROJECT_ID,
+    storageBucket: CONFIG.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: CONFIG.FIREBASE_MESSAGING_SENDER_ID,
+    appId: CONFIG.FIREBASE_APP_ID
 };
 
 // Initialize Firebase

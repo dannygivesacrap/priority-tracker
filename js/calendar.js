@@ -1,8 +1,8 @@
 // Google Calendar integration module
 
-// Google API Configuration
-const GOOGLE_CLIENT_ID = '495524959522-uo4fh2hclmq54l68bp8jv3abp8ehomp.apps.googleusercontent.com';
-const GOOGLE_API_KEY = 'AIzaSyAwu6VqrqYuF5cRz0CgEea_ut3u4VSQZD4';
+// Google API Configuration - uses values from config.js
+const GOOGLE_CLIENT_ID = CONFIG.GOOGLE_CLIENT_ID;
+const GOOGLE_API_KEY = CONFIG.GOOGLE_API_KEY;
 const CALENDAR_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
 
 let calendarEvents = [];
