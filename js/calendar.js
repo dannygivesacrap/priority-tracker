@@ -149,35 +149,50 @@ function generateCalendarHTML() {
         return '<div class="calendar-empty">No events today</div>';
     }
 
+    const now = new Date();
+
     return calendarEvents.map(event => {
-        const timeRange = formatEventTimeRange(event);
+        const { startTime, endTime } = formatEventTimes(event);
         const title = event.summary || 'Untitled Event';
         const location = event.location || '';
         const colorClass = getEventColorClass(event);
         const videoLink = getVideoLink(event);
+        const isPast = isEventPast(event, now);
 
         return `
-            <div class="calendar-event">
+            <div class="calendar-event ${isPast ? 'past' : ''}">
                 <div class="event-color ${colorClass}"></div>
-                <span class="event-time">${timeRange}</span>
+                <div class="event-time">
+                    <div>${startTime}</div>
+                    <div class="event-end-time">${endTime}</div>
+                </div>
                 <div class="event-details">
                     <div class="event-title">${escapeHtml(title)}</div>
                     ${location ? `<div class="event-location">${escapeHtml(location)}</div>` : ''}
-                    ${videoLink ? `<a href="${videoLink}" target="_blank" class="event-video-link">\ud83d\udcf9 Join</a>` : ''}
+                    ${videoLink && !isPast ? `<a href="${videoLink}" target="_blank" class="event-video-link">\ud83d\udcf9 Join</a>` : ''}
                 </div>
             </div>
         `;
     }).join('');
 }
 
-// Format event time range (start - end)
-function formatEventTimeRange(event) {
+// Check if event has ended
+function isEventPast(event, now) {
+    if (event.end.date) {
+        // All-day event - past if end date is before today
+        return new Date(event.end.date) < now;
+    }
+    return new Date(event.end.dateTime) < now;
+}
+
+// Format event start and end times separately
+function formatEventTimes(event) {
     if (event.start.date) {
-        return 'All day';
+        return { startTime: 'All day', endTime: '' };
     }
 
-    const startTime = new Date(event.start.dateTime);
-    const endTime = new Date(event.end.dateTime);
+    const startDate = new Date(event.start.dateTime);
+    const endDate = new Date(event.end.dateTime);
 
     const formatTime = (date) => date.toLocaleTimeString('en-US', {
         hour: 'numeric',
@@ -185,7 +200,10 @@ function formatEventTimeRange(event) {
         hour12: true
     }).toLowerCase().replace(' ', '');
 
-    return `${formatTime(startTime)}-${formatTime(endTime)}`;
+    return {
+        startTime: formatTime(startDate),
+        endTime: formatTime(endDate)
+    };
 }
 
 // Get video meeting link from event

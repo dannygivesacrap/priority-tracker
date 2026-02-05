@@ -317,21 +317,24 @@ async function addPriorityInManager(category) {
 let draggedPriority = null;
 
 function initPriorityDragAndDrop() {
+    // Make priority items draggable
     document.querySelectorAll('.priority-item[draggable="true"]').forEach(item => {
         item.addEventListener('dragstart', (e) => {
             draggedPriority = item;
             item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
         });
 
         item.addEventListener('dragend', () => {
             item.classList.remove('dragging');
             document.querySelectorAll('.priority-item').forEach(i => i.classList.remove('drag-over'));
+            document.querySelectorAll('.priority-items').forEach(c => c.classList.remove('drag-over'));
             draggedPriority = null;
         });
 
         item.addEventListener('dragover', (e) => {
             e.preventDefault();
-            if (item !== draggedPriority && item.dataset.category === draggedPriority?.dataset.category) {
+            if (item !== draggedPriority) {
                 item.classList.add('drag-over');
             }
         });
@@ -342,25 +345,100 @@ function initPriorityDragAndDrop() {
 
         item.addEventListener('drop', async (e) => {
             e.preventDefault();
+            e.stopPropagation();
             item.classList.remove('drag-over');
 
             if (!draggedPriority || item === draggedPriority) return;
-            if (item.dataset.category !== draggedPriority.dataset.category) return;
 
-            const category = item.dataset.category;
+            const fromCategory = draggedPriority.dataset.category;
+            const toCategory = item.dataset.category;
             const draggedId = draggedPriority.dataset.priorityId;
             const targetId = item.dataset.priorityId;
 
-            const catPriorities = priorities[category];
-            const fromIndex = catPriorities.findIndex(p => p.id === draggedId);
-            const toIndex = catPriorities.findIndex(p => p.id === targetId);
+            if (fromCategory === toCategory) {
+                // Reorder within same category
+                const catPriorities = priorities[fromCategory];
+                const fromIndex = catPriorities.findIndex(p => p.id === draggedId);
+                const toIndex = catPriorities.findIndex(p => p.id === targetId);
 
-            if (fromIndex !== -1 && toIndex !== -1) {
-                await reorderPriorities(category, fromIndex, toIndex);
-                showToast('Priority reordered');
+                if (fromIndex !== -1 && toIndex !== -1) {
+                    await reorderPriorities(fromCategory, fromIndex, toIndex);
+                    showToast('Priority reordered');
+                }
+            } else {
+                // Move to different category
+                await movePriorityToCategory(draggedId, fromCategory, toCategory, targetId);
             }
         });
     });
+
+    // Make category containers droppable
+    document.querySelectorAll('.priority-items').forEach(container => {
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (draggedPriority && container.dataset.category !== draggedPriority.dataset.category) {
+                container.classList.add('drag-over');
+            }
+        });
+
+        container.addEventListener('dragleave', (e) => {
+            if (!container.contains(e.relatedTarget)) {
+                container.classList.remove('drag-over');
+            }
+        });
+
+        container.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            container.classList.remove('drag-over');
+
+            if (!draggedPriority) return;
+
+            const fromCategory = draggedPriority.dataset.category;
+            const toCategory = container.dataset.category;
+
+            if (fromCategory !== toCategory) {
+                const draggedId = draggedPriority.dataset.priorityId;
+                await movePriorityToCategory(draggedId, fromCategory, toCategory);
+            }
+        });
+    });
+}
+
+// Move priority from one category to another
+async function movePriorityToCategory(priorityId, fromCategory, toCategory, beforePriorityId = null) {
+    const fromPriorities = priorities[fromCategory];
+    const priorityIndex = fromPriorities.findIndex(p => p.id === priorityId);
+
+    if (priorityIndex === -1) return;
+
+    // Remove from source category
+    const [priority] = fromPriorities.splice(priorityIndex, 1);
+
+    // Update order in source category
+    fromPriorities.forEach((p, i) => p.order = i);
+
+    // Add to target category
+    if (!priorities[toCategory]) priorities[toCategory] = [];
+
+    if (beforePriorityId) {
+        const targetIndex = priorities[toCategory].findIndex(p => p.id === beforePriorityId);
+        if (targetIndex !== -1) {
+            priorities[toCategory].splice(targetIndex, 0, priority);
+        } else {
+            priorities[toCategory].push(priority);
+        }
+    } else {
+        priorities[toCategory].push(priority);
+    }
+
+    // Update order in target category
+    priorities[toCategory].forEach((p, i) => p.order = i);
+
+    // Save both categories
+    await savePriorities(fromCategory);
+    await savePriorities(toCategory);
+
+    showToast(`Priority moved to ${getCategoryLabel(toCategory)}`);
 }
 
 // Render a priority list into a container

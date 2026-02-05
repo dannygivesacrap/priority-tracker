@@ -204,6 +204,14 @@ function getTasksByCategory(type, category) {
     return tasks[type].filter(task => {
         if (task.completed && category !== 'completed') return false;
 
+        // Recurring section shows all recurring tasks
+        if (category === 'recurring') {
+            return task.recurring && !task.completed;
+        }
+
+        // Skip recurring tasks from other sections (they show in recurring)
+        if (task.recurring && category !== 'today') return false;
+
         // Check due date for dynamic categorization
         if (task.dueDate) {
             const today = new Date();
@@ -218,7 +226,7 @@ function getTasksByCategory(type, category) {
         }
 
         return task.category === category;
-    });
+    }).sort((a, b) => (a.order || 0) - (b.order || 0));
 }
 
 // Get today's tasks (for dashboard)
@@ -271,7 +279,8 @@ function renderWorkView() {
         { id: 'today', label: 'Today' },
         { id: 'thisWeek', label: 'This Week' },
         { id: 'nextWeek', label: 'Next Week & Beyond' },
-        { id: 'backburner', label: 'Backburner' }
+        { id: 'backburner', label: 'Backburner' },
+        { id: 'recurring', label: 'Recurring' }
     ];
 
     sections.forEach(section => {
@@ -294,7 +303,8 @@ function renderPersonalView() {
         { id: 'today', label: 'Today' },
         { id: 'thisWeek', label: 'This Week' },
         { id: 'nextWeek', label: 'Next Week & Beyond' },
-        { id: 'backburner', label: 'Backburner' }
+        { id: 'backburner', label: 'Backburner' },
+        { id: 'recurring', label: 'Recurring' }
     ];
 
     sections.forEach(section => {
@@ -327,7 +337,7 @@ function renderTaskList(container, taskList, type) {
     if (!container) return;
 
     if (taskList.length === 0) {
-        container.innerHTML = '<div class="empty">All caught up!</div>';
+        container.innerHTML = '<div class="empty"><div class="empty-icon">\u2705</div>All caught up!</div>';
         return;
     }
 
@@ -339,7 +349,7 @@ function renderTaskList(container, taskList, type) {
     container.innerHTML = taskList.map(task => createTaskHTML(task, type)).join('');
 
     // Initialize drag and drop
-    initDragAndDrop(container);
+    initTaskDragAndDrop(container);
 
     // Add event listeners
     container.querySelectorAll('.task-checkbox').forEach(checkbox => {
@@ -380,12 +390,13 @@ function renderTaskList(container, taskList, type) {
 
 // Create HTML for a single task
 function createTaskHTML(task, type) {
-    const recurringIcon = task.recurring ? `<span class="task-recurring">\u21bb ${task.recurring === 'daily' ? '' : task.recurring}</span>` : '';
+    const recurringLabel = task.recurring ? getRecurringLabel(task.recurring) : '';
+    const recurringIcon = task.recurring ? `<span class="task-recurring">\u21bb ${recurringLabel}</span>` : '';
     const priorityTag = task.priorityId ? `<span class="task-tag">${getPriorityName(task.priorityId, type)}</span>` : '';
-    const dueMeta = task.dueDate && !isToday(task.dueDate) ? `<span class="task-meta">${formatDate(task.dueDate)}</span>` : '';
+    const dueMeta = task.dueDate && !isToday(task.dueDate) ? `<span class="task-meta">\ud83d\udcc5 ${formatDate(task.dueDate)}</span>` : '';
 
     return `
-        <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}" data-type="${type}" draggable="true">
+        <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}" data-type="${type}" data-order="${task.order || 0}" draggable="true">
             <span class="task-drag-handle">\u2630</span>
             <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
             <div class="task-content">
@@ -400,6 +411,17 @@ function createTaskHTML(task, type) {
             </div>
         </div>
     `;
+}
+
+// Get recurring label
+function getRecurringLabel(pattern) {
+    const labels = {
+        'daily': '',
+        'weekdays': 'weekdays',
+        'weekly': 'weekly',
+        'monthly': 'monthly'
+    };
+    return labels[pattern] || pattern;
 }
 
 // Handle task completion with celebration
@@ -475,6 +497,7 @@ function showTaskDropdown(taskItem, type) {
             <div class="dropdown-item">\ud83d\udd01 Set Recurring \u25b6</div>
             <div class="dropdown-submenu-content">
                 <div class="dropdown-item" data-action="recurring-daily">Daily</div>
+                <div class="dropdown-item" data-action="recurring-weekdays">Weekdays</div>
                 <div class="dropdown-item" data-action="recurring-weekly">Weekly</div>
                 <div class="dropdown-item" data-action="recurring-monthly">Monthly</div>
                 ${task && task.recurring ? '<div class="dropdown-divider"></div><div class="dropdown-item" data-action="recurring-none">Remove Recurring</div>' : ''}
@@ -506,6 +529,8 @@ function showTaskDropdown(taskItem, type) {
                 await moveTask(taskId, 'backburner');
             } else if (action === 'recurring-daily') {
                 await setRecurring(taskId, 'daily');
+            } else if (action === 'recurring-weekdays') {
+                await setRecurring(taskId, 'weekdays');
             } else if (action === 'recurring-weekly') {
                 await setRecurring(taskId, 'weekly');
             } else if (action === 'recurring-monthly') {
@@ -538,7 +563,7 @@ function showTaskDropdown(taskItem, type) {
 // Drag and drop for tasks
 let draggedTask = null;
 
-function initDragAndDrop(container) {
+function initTaskDragAndDrop(container) {
     container.querySelectorAll('.task-item[draggable="true"]').forEach(item => {
         item.addEventListener('dragstart', handleDragStart);
         item.addEventListener('dragend', handleDragEnd);

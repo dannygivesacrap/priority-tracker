@@ -22,12 +22,13 @@ const jokes = [
     { setup: "What do you call a computer that sings?", punchline: "A-Dell." }
 ];
 
-// Celebration types and messages
-const celebrationTypes = ['confetti', 'champagne', 'cat', 'emoji', 'stars', 'rainbow'];
+// Celebration types and messages - more variety!
+const celebrationTypes = ['confetti', 'champagne', 'cat', 'emoji', 'stars', 'rainbow', 'fireworks', 'dance', 'rocket'];
 const toastMessages = [
-    "Nice work!", "You're on fire!", "Crushed it!",
-    "Boom!", "Nailed it!", "Amazing!",
-    "Keep going!", "Unstoppable!", "Legend!"
+    "Nice work! \u2728", "You're on fire! \ud83d\udd25", "Crushed it! \ud83d\udcaa",
+    "Boom! \ud83d\udca5", "Nailed it! \ud83c\udfaf", "Amazing! \ud83c\udf1f",
+    "Keep going! \ud83d\ude80", "Unstoppable! \u26a1", "Legend! \ud83d\udc51",
+    "Yes! \ud83c\udf89", "Woohoo! \ud83c\udf8a", "Awesome! \ud83d\udc4f"
 ];
 
 // Load all data
@@ -185,6 +186,9 @@ function triggerCelebration() {
         case 'emoji': createEmojiBurst(overlay); break;
         case 'stars': createStarBurst(overlay); break;
         case 'rainbow': createRainbow(overlay); break;
+        case 'fireworks': createFireworks(overlay); break;
+        case 'dance': createDanceParty(overlay); break;
+        case 'rocket': createRocket(overlay); break;
     }
 
     showToast(toastMessages[Math.floor(Math.random() * toastMessages.length)]);
@@ -264,6 +268,66 @@ function createRainbow(overlay) {
     overlay.appendChild(wave);
     createEmojiBurst(overlay);
     setTimeout(() => wave.remove(), 2500);
+}
+
+function createFireworks(overlay) {
+    const fireworks = ['\ud83c\udf86', '\ud83c\udf87', '\u2728', '\ud83d\udca5'];
+    for (let i = 0; i < 20; i++) {
+        const fw = document.createElement('div');
+        fw.className = 'emoji-burst';
+        fw.textContent = fireworks[Math.floor(Math.random() * fireworks.length)];
+        fw.style.left = Math.random() * 100 + '%';
+        fw.style.top = Math.random() * 60 + '%';
+        fw.style.animationDelay = Math.random() * 0.8 + 's';
+        fw.style.fontSize = (24 + Math.random() * 32) + 'px';
+        overlay.appendChild(fw);
+    }
+    setTimeout(() => overlay.innerHTML = '', 3000);
+}
+
+function createDanceParty(overlay) {
+    const dancers = ['\ud83d\udd7a', '\ud83d\udc83', '\ud83c\udf89', '\ud83c\udf8a', '\ud83d\udcaf'];
+    for (let i = 0; i < 12; i++) {
+        const dancer = document.createElement('div');
+        dancer.className = 'emoji-burst';
+        dancer.textContent = dancers[Math.floor(Math.random() * dancers.length)];
+        dancer.style.left = 10 + Math.random() * 80 + '%';
+        dancer.style.top = 30 + Math.random() * 40 + '%';
+        dancer.style.animationDelay = Math.random() * 0.4 + 's';
+        dancer.style.fontSize = '40px';
+        overlay.appendChild(dancer);
+    }
+    setTimeout(() => overlay.innerHTML = '', 2500);
+}
+
+function createRocket(overlay) {
+    const rocket = document.createElement('div');
+    rocket.style.cssText = `
+        position: fixed;
+        bottom: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 60px;
+        animation: rocket-launch 1.5s ease-out forwards;
+        z-index: 10000;
+    `;
+    rocket.textContent = '\ud83d\ude80';
+    overlay.appendChild(rocket);
+
+    // Add trail
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            const spark = document.createElement('div');
+            spark.className = 'confetti';
+            spark.style.left = (45 + Math.random() * 10) + '%';
+            spark.style.top = (70 + Math.random() * 30) + '%';
+            spark.style.background = ['#ff6b6b', '#ffd93d', '#ff9f43'][Math.floor(Math.random() * 3)];
+            spark.style.width = spark.style.height = '8px';
+            overlay.appendChild(spark);
+        }, i * 50);
+    }
+
+    setTimeout(() => overlay.innerHTML = '', 2500);
 }
 
 // Toast notification

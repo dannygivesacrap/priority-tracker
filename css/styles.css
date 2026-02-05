@@ -454,12 +454,10 @@ body {
     border-radius: 12px;
 }
 
-.task-list .empty::before {
-    content: '\u2713';
-    display: block;
+.task-list .empty-icon {
     font-size: 24px;
     margin-bottom: 8px;
-    opacity: 0.3;
+    opacity: 0.4;
 }
 
 .task-section {
@@ -735,7 +733,21 @@ body {
     font-size: 12px;
     font-weight: 600;
     color: #495057;
-    min-width: 50px;
+    min-width: 44px;
+}
+
+.event-end-time {
+    font-size: 10px;
+    color: #868e96;
+    font-weight: 500;
+}
+
+.calendar-event.past {
+    opacity: 0.5;
+}
+
+.calendar-event.past .event-title {
+    text-decoration: line-through;
 }
 
 .event-details {
@@ -1001,6 +1013,11 @@ body {
     100% { transform: scale(1) rotate(360deg); opacity: 0; }
 }
 
+@keyframes rocket-launch {
+    0% { bottom: -50px; opacity: 1; }
+    100% { bottom: 120%; opacity: 0; }
+}
+
 /* ===== FOCUS MODE ===== */
 .focus-overlay {
     position: fixed;
@@ -1227,6 +1244,12 @@ body {
 
 .priority-item.drag-over {
     border-top: 2px solid #6366f1;
+}
+
+.priority-items.drag-over {
+    background: #f0f0ff;
+    border: 2px dashed #6366f1;
+    border-radius: 8px;
 }
 
 .priority-item-num {
