@@ -327,7 +327,7 @@ function renderTaskList(container, taskList, type) {
     if (!container) return;
 
     if (taskList.length === 0) {
-        container.innerHTML = '<div class="empty">No tasks yet</div>';
+        container.innerHTML = '<div class="empty">All caught up!</div>';
         return;
     }
 
@@ -337,6 +337,9 @@ function renderTaskList(container, taskList, type) {
     }
 
     container.innerHTML = taskList.map(task => createTaskHTML(task, type)).join('');
+
+    // Initialize drag and drop
+    initDragAndDrop(container);
 
     // Add event listeners
     container.querySelectorAll('.task-checkbox').forEach(checkbox => {
@@ -382,7 +385,8 @@ function createTaskHTML(task, type) {
     const dueMeta = task.dueDate && !isToday(task.dueDate) ? `<span class="task-meta">${formatDate(task.dueDate)}</span>` : '';
 
     return `
-        <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
+        <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}" data-type="${type}" draggable="true">
+            <span class="task-drag-handle">\u2630</span>
             <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
             <div class="task-content">
                 <span class="task-title ${task.completed ? 'completed' : ''}">${escapeHtml(task.title)}</span>
@@ -454,34 +458,39 @@ function startEditingTask(taskItem, type) {
 // Show quick actions dropdown for a task
 function showTaskDropdown(taskItem, type) {
     // Close any existing dropdowns
-    document.querySelectorAll('.dropdown.show').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.dropdown.show').forEach(d => d.remove());
 
     const taskId = taskItem.dataset.taskId;
     const task = tasks[type].find(t => t.id === taskId);
 
     // Create dropdown
-    let dropdown = taskItem.querySelector('.dropdown');
-    if (!dropdown) {
-        dropdown = document.createElement('div');
-        dropdown.className = 'dropdown';
-        dropdown.innerHTML = `
-            <div class="dropdown-item" data-action="tomorrow">\u23f0 Delay to Tomorrow</div>
-            <div class="dropdown-item" data-action="nextWeek">\ud83d\udcc5 Delay to Next Week</div>
-            <div class="dropdown-item" data-action="backburner">\ud83d\udd25 Move to Backburner</div>
-            <div class="dropdown-divider"></div>
-            <div class="dropdown-submenu">
-                <div class="dropdown-item">\ud83d\udd01 Set Recurring \u25b6</div>
-                <div class="dropdown-submenu-content">
-                    <div class="dropdown-item" data-action="recurring-daily">Daily</div>
-                    <div class="dropdown-item" data-action="recurring-weekly">Weekly</div>
-                    <div class="dropdown-item" data-action="recurring-monthly">Monthly</div>
-                    ${task && task.recurring ? '<div class="dropdown-divider"></div><div class="dropdown-item" data-action="recurring-none">Remove Recurring</div>' : ''}
-                </div>
+    const dropdown = document.createElement('div');
+    dropdown.className = 'dropdown';
+    dropdown.innerHTML = `
+        <div class="dropdown-item" data-action="tomorrow">\u23f0 Delay to Tomorrow</div>
+        <div class="dropdown-item" data-action="nextWeek">\ud83d\udcc5 Delay to Next Week</div>
+        <div class="dropdown-item" data-action="backburner">\ud83d\udd25 Move to Backburner</div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-submenu">
+            <div class="dropdown-item">\ud83d\udd01 Set Recurring \u25b6</div>
+            <div class="dropdown-submenu-content">
+                <div class="dropdown-item" data-action="recurring-daily">Daily</div>
+                <div class="dropdown-item" data-action="recurring-weekly">Weekly</div>
+                <div class="dropdown-item" data-action="recurring-monthly">Monthly</div>
+                ${task && task.recurring ? '<div class="dropdown-divider"></div><div class="dropdown-item" data-action="recurring-none">Remove Recurring</div>' : ''}
             </div>
-            <div class="dropdown-divider"></div>
-            <div class="dropdown-item danger" data-action="delete">\ud83d\uddd1 Delete Task</div>
-        `;
-        taskItem.appendChild(dropdown);
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger" data-action="delete">\ud83d\uddd1 Delete Task</div>
+    `;
+
+    // Position dropdown near the button
+    const btn = taskItem.querySelector('.task-action-btn[data-action="more"]');
+    const rect = btn.getBoundingClientRect();
+    dropdown.style.top = rect.bottom + 4 + 'px';
+    dropdown.style.left = (rect.right - 200) + 'px';
+
+    document.body.appendChild(dropdown);
 
         // Add event listeners
         dropdown.querySelectorAll('.dropdown-item[data-action]').forEach(item => {
@@ -515,16 +524,85 @@ function showTaskDropdown(taskItem, type) {
         });
     }
 
-    dropdown.classList.toggle('show');
+    dropdown.classList.add('show');
 
     // Close dropdown when clicking outside
     const closeDropdown = (e) => {
         if (!dropdown.contains(e.target)) {
-            dropdown.classList.remove('show');
+            dropdown.remove();
             document.removeEventListener('click', closeDropdown);
         }
     };
     setTimeout(() => document.addEventListener('click', closeDropdown), 0);
+}
+
+// Drag and drop for tasks
+let draggedTask = null;
+
+function initDragAndDrop(container) {
+    container.querySelectorAll('.task-item[draggable="true"]').forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('dragleave', handleDragLeave);
+        item.addEventListener('drop', handleDrop);
+    });
+}
+
+function handleDragStart(e) {
+    draggedTask = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.task-item').forEach(item => {
+        item.classList.remove('drag-over');
+    });
+    draggedTask = null;
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    if (this !== draggedTask && !this.classList.contains('dragging')) {
+        this.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+}
+
+async function handleDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+
+    if (!draggedTask || this === draggedTask) return;
+
+    const draggedId = draggedTask.dataset.taskId;
+    const targetId = this.dataset.taskId;
+    const type = draggedTask.dataset.type;
+
+    // Get current order
+    const taskList = tasks[type].filter(t => !t.completed);
+    const draggedIndex = taskList.findIndex(t => t.id === draggedId);
+    const targetIndex = taskList.findIndex(t => t.id === targetId);
+
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    // Reorder
+    const [removed] = taskList.splice(draggedIndex, 1);
+    taskList.splice(targetIndex, 0, removed);
+
+    // Update order in Firestore
+    for (let i = 0; i < taskList.length; i++) {
+        await updateTask(taskList[i].id, { order: i });
+    }
+
+    showToast('Tasks reordered');
 }
 
 // Render mobile tasks

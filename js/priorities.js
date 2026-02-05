@@ -1,13 +1,14 @@
 // Priority management module
 
 // Local priority state
-let priorities = {
-    work: [],
-    personal: []
-};
+let priorities = {};
+
+// Category list (default categories)
+let categories = ['work', 'personal'];
 
 // Real-time listeners
 let priorityListeners = [];
+let categoriesListener = null;
 
 // Load priorities from Firestore with real-time updates
 function loadPriorities() {
@@ -16,8 +17,40 @@ function loadPriorities() {
     // Clear existing listeners
     priorityListeners.forEach(unsubscribe => unsubscribe());
     priorityListeners = [];
+    if (categoriesListener) categoriesListener();
 
-    ['work', 'personal'].forEach(type => {
+    // First load categories
+    categoriesListener = userDoc.collection('settings').doc('categories')
+        .onSnapshot(doc => {
+            if (doc.exists && doc.data().list) {
+                categories = doc.data().list;
+            } else {
+                categories = ['work', 'personal'];
+            }
+
+            // Initialize priorities object for each category
+            categories.forEach(cat => {
+                if (!priorities[cat]) priorities[cat] = [];
+            });
+
+            // Load priorities for each category
+            loadPrioritiesForCategories();
+            renderPriorities();
+        }, error => {
+            console.error('Error loading categories:', error);
+            categories = ['work', 'personal'];
+            loadPrioritiesForCategories();
+        });
+}
+
+function loadPrioritiesForCategories() {
+    const userDoc = getUserDoc();
+
+    // Clear existing priority listeners
+    priorityListeners.forEach(unsubscribe => unsubscribe());
+    priorityListeners = [];
+
+    categories.forEach(type => {
         const unsubscribe = userDoc.collection('priorities').doc(type)
             .onSnapshot(doc => {
                 if (doc.exists) {
@@ -100,23 +133,234 @@ function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
+// Add a new category
+async function addNewCategory() {
+    const name = prompt('Enter category name:');
+    if (!name || !name.trim()) return;
+
+    const categoryId = name.trim().toLowerCase().replace(/\s+/g, '-');
+
+    if (categories.includes(categoryId)) {
+        showToast('Category already exists');
+        return;
+    }
+
+    categories.push(categoryId);
+    priorities[categoryId] = [];
+
+    const userDoc = getUserDoc();
+    await userDoc.collection('settings').doc('categories').set({
+        list: categories,
+        labels: { [categoryId]: name.trim() }
+    }, { merge: true });
+
+    await userDoc.collection('priorities').doc(categoryId).set({
+        items: [],
+        label: name.trim()
+    });
+
+    showToast('Category added!');
+}
+
+// Delete a category
+async function deleteCategory(categoryId) {
+    if (categoryId === 'work' || categoryId === 'personal') {
+        showToast('Cannot delete default categories');
+        return;
+    }
+
+    if (!confirm(`Delete category "${categoryId}" and all its priorities?`)) return;
+
+    categories = categories.filter(c => c !== categoryId);
+    delete priorities[categoryId];
+
+    const userDoc = getUserDoc();
+    await userDoc.collection('settings').doc('categories').set({
+        list: categories
+    }, { merge: true });
+
+    await userDoc.collection('priorities').doc(categoryId).delete();
+
+    showToast('Category deleted');
+}
+
+// Get category label
+function getCategoryLabel(categoryId) {
+    const labels = {
+        'work': 'Work',
+        'personal': 'Personal'
+    };
+    return labels[categoryId] || categoryId.charAt(0).toUpperCase() + categoryId.slice(1).replace(/-/g, ' ');
+}
+
 // Render priorities to DOM
 function renderPriorities() {
     renderPriorityStrip();
     renderMobilePriorities();
+    renderPrioritiesManager();
 }
 
 // Render the priorities strip (desktop)
 function renderPriorityStrip() {
-    const workContainer = document.getElementById('workPriorities');
-    const personalContainer = document.getElementById('personalPriorities');
+    const strip = document.querySelector('.priorities-strip');
+    if (!strip) return;
 
-    if (workContainer) {
-        renderPriorityList(workContainer, priorities.work, 'work');
+    // Build rows for each category
+    let html = '';
+    categories.forEach(cat => {
+        const label = getCategoryLabel(cat);
+        html += `
+            <div class="priorities-row">
+                <span class="priorities-label">${label}</span>
+                <div class="priorities-list" id="${cat}Priorities"></div>
+            </div>
+        `;
+    });
+
+    strip.innerHTML = html;
+
+    // Render priority chips for each category
+    categories.forEach(cat => {
+        const container = document.getElementById(`${cat}Priorities`);
+        if (container) {
+            renderPriorityList(container, priorities[cat] || [], cat);
+        }
+    });
+}
+
+// Render priorities manager view
+function renderPrioritiesManager() {
+    const container = document.getElementById('prioritiesManager');
+    if (!container) return;
+
+    let html = '';
+
+    categories.forEach(cat => {
+        const label = getCategoryLabel(cat);
+        const isDefault = cat === 'work' || cat === 'personal';
+        const catPriorities = (priorities[cat] || []).sort((a, b) => a.order - b.order);
+
+        html += `
+            <div class="priority-category" data-category="${cat}">
+                <div class="priority-category-header">
+                    <span>${label}</span>
+                    ${!isDefault ? `<button onclick="deleteCategory('${cat}')">\u2715 Delete</button>` : ''}
+                </div>
+                <div class="priority-items" data-category="${cat}">
+                    ${catPriorities.map((p, i) => `
+                        <div class="priority-item" data-priority-id="${p.id}" data-category="${cat}" draggable="true">
+                            <span class="priority-item-num ${cat}">${i + 1}</span>
+                            <span class="priority-item-title">${escapeHtml(p.title)}</span>
+                            <div class="priority-item-actions">
+                                <button onclick="editPriorityInManager('${cat}', '${p.id}')" title="Edit">\u270f\ufe0f</button>
+                                <button class="delete" onclick="deletePriority('${cat}', '${p.id}')" title="Delete">\u2715</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="add-priority-btn" onclick="addPriorityInManager('${cat}')">+ Add Priority</div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+
+    // Initialize drag and drop for priorities
+    initPriorityDragAndDrop();
+}
+
+// Edit priority in manager view
+function editPriorityInManager(category, priorityId) {
+    const item = document.querySelector(`.priority-item[data-priority-id="${priorityId}"]`);
+    if (!item) return;
+
+    const titleEl = item.querySelector('.priority-item-title');
+    const currentTitle = titleEl.textContent;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentTitle;
+
+    titleEl.innerHTML = '';
+    titleEl.appendChild(input);
+    input.focus();
+    input.select();
+
+    const save = async () => {
+        const newTitle = input.value.trim();
+        if (newTitle && newTitle !== currentTitle) {
+            await updatePriority(category, priorityId, newTitle);
+        } else {
+            titleEl.textContent = currentTitle;
+        }
+    };
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') input.blur();
+        if (e.key === 'Escape') {
+            input.value = currentTitle;
+            input.blur();
+        }
+    });
+}
+
+// Add priority from manager view
+async function addPriorityInManager(category) {
+    const title = prompt('Enter priority name:');
+    if (title && title.trim()) {
+        await addPriority(category, title.trim());
     }
-    if (personalContainer) {
-        renderPriorityList(personalContainer, priorities.personal, 'personal');
-    }
+}
+
+// Drag and drop for priorities in manager
+let draggedPriority = null;
+
+function initPriorityDragAndDrop() {
+    document.querySelectorAll('.priority-item[draggable="true"]').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            draggedPriority = item;
+            item.classList.add('dragging');
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            document.querySelectorAll('.priority-item').forEach(i => i.classList.remove('drag-over'));
+            draggedPriority = null;
+        });
+
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (item !== draggedPriority && item.dataset.category === draggedPriority?.dataset.category) {
+                item.classList.add('drag-over');
+            }
+        });
+
+        item.addEventListener('dragleave', () => {
+            item.classList.remove('drag-over');
+        });
+
+        item.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            item.classList.remove('drag-over');
+
+            if (!draggedPriority || item === draggedPriority) return;
+            if (item.dataset.category !== draggedPriority.dataset.category) return;
+
+            const category = item.dataset.category;
+            const draggedId = draggedPriority.dataset.priorityId;
+            const targetId = item.dataset.priorityId;
+
+            const catPriorities = priorities[category];
+            const fromIndex = catPriorities.findIndex(p => p.id === draggedId);
+            const toIndex = catPriorities.findIndex(p => p.id === targetId);
+
+            if (fromIndex !== -1 && toIndex !== -1) {
+                await reorderPriorities(category, fromIndex, toIndex);
+                showToast('Priority reordered');
+            }
+        });
+    });
 }
 
 // Render a priority list into a container
@@ -280,28 +524,27 @@ function renderMobilePriorities() {
     const container = document.getElementById('mobilePriorities');
     if (!container) return;
 
-    container.innerHTML = `
-        <div class="priorities-strip" style="background: transparent; border: none; padding: 0;">
-            <div class="priorities-row">
-                <span class="priorities-label">Work</span>
-                <div class="priorities-list" id="mobileWorkPriorities"></div>
-            </div>
-            <div class="priorities-row">
-                <span class="priorities-label">Personal</span>
-                <div class="priorities-list" id="mobilePersonalPriorities"></div>
-            </div>
-        </div>
-    `;
+    let html = '<div class="priorities-strip" style="background: transparent; border: none; padding: 0;">';
 
-    const workContainer = document.getElementById('mobileWorkPriorities');
-    const personalContainer = document.getElementById('mobilePersonalPriorities');
+    categories.forEach(cat => {
+        const label = getCategoryLabel(cat);
+        html += `
+            <div class="priorities-row">
+                <span class="priorities-label">${label}</span>
+                <div class="priorities-list" id="mobile${cat}Priorities"></div>
+            </div>
+        `;
+    });
 
-    if (workContainer) {
-        renderPriorityList(workContainer, priorities.work, 'work');
-    }
-    if (personalContainer) {
-        renderPriorityList(personalContainer, priorities.personal, 'personal');
-    }
+    html += '</div>';
+    container.innerHTML = html;
+
+    categories.forEach(cat => {
+        const catContainer = document.getElementById(`mobile${cat}Priorities`);
+        if (catContainer) {
+            renderPriorityList(catContainer, priorities[cat] || [], cat);
+        }
+    });
 }
 
 // Helper: escape HTML

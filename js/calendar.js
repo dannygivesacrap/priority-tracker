@@ -150,38 +150,77 @@ function generateCalendarHTML() {
     }
 
     return calendarEvents.map(event => {
-        const startTime = formatEventTime(event.start);
+        const timeRange = formatEventTimeRange(event);
         const title = event.summary || 'Untitled Event';
         const location = event.location || '';
         const colorClass = getEventColorClass(event);
+        const videoLink = getVideoLink(event);
 
         return `
             <div class="calendar-event">
                 <div class="event-color ${colorClass}"></div>
-                <span class="event-time">${startTime}</span>
+                <span class="event-time">${timeRange}</span>
                 <div class="event-details">
                     <div class="event-title">${escapeHtml(title)}</div>
                     ${location ? `<div class="event-location">${escapeHtml(location)}</div>` : ''}
+                    ${videoLink ? `<a href="${videoLink}" target="_blank" class="event-video-link">\ud83d\udcf9 Join</a>` : ''}
                 </div>
             </div>
         `;
     }).join('');
 }
 
-// Format event time
-function formatEventTime(eventStart) {
-    if (eventStart.date) {
-        // All-day event
+// Format event time range (start - end)
+function formatEventTimeRange(event) {
+    if (event.start.date) {
         return 'All day';
     }
 
-    const time = new Date(eventStart.dateTime);
-    return time.toLocaleTimeString('en-US', {
+    const startTime = new Date(event.start.dateTime);
+    const endTime = new Date(event.end.dateTime);
+
+    const formatTime = (date) => date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
-        hour12: false
-    });
+        hour12: true
+    }).toLowerCase().replace(' ', '');
+
+    return `${formatTime(startTime)}-${formatTime(endTime)}`;
 }
+
+// Get video meeting link from event
+function getVideoLink(event) {
+    // Check for Google Meet
+    if (event.hangoutLink) {
+        return event.hangoutLink;
+    }
+
+    // Check for conferenceData
+    if (event.conferenceData && event.conferenceData.entryPoints) {
+        const videoEntry = event.conferenceData.entryPoints.find(ep => ep.entryPointType === 'video');
+        if (videoEntry) {
+            return videoEntry.uri;
+        }
+    }
+
+    // Check location for Zoom or Meet links
+    const location = event.location || '';
+    const description = event.description || '';
+    const textToSearch = location + ' ' + description;
+
+    const zoomMatch = textToSearch.match(/https:\/\/[a-z0-9]+\.zoom\.us\/j\/[^\s<"]+/i);
+    if (zoomMatch) {
+        return zoomMatch[0];
+    }
+
+    const meetMatch = textToSearch.match(/https:\/\/meet\.google\.com\/[a-z0-9-]+/i);
+    if (meetMatch) {
+        return meetMatch[0];
+    }
+
+    return null;
+}
+
 
 // Get color class based on event calendar or color
 function getEventColorClass(event) {

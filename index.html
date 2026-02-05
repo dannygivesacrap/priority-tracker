@@ -44,6 +44,13 @@
                 <span class="sidebar-item-label">Personal</span>
             </button>
 
+            <div class="sidebar-divider"></div>
+
+            <button class="sidebar-item" data-view="priorities">
+                <span>⚙️</span>
+                <span class="sidebar-item-label">Priorities</span>
+            </button>
+
             <div class="sidebar-spacer"></div>
 
             <div class="sidebar-divider"></div>
@@ -141,6 +148,17 @@
                         <div class="loading">Loading tasks</div>
                     </div>
                     <div class="add-task" data-type="personal" style="max-width: 600px;">+ Add personal task</div>
+                </div>
+
+                <!-- Priorities Management View -->
+                <div class="view" id="prioritiesView">
+                    <div class="section-header">
+                        <h3>Manage Priorities & Categories</h3>
+                    </div>
+                    <div class="priorities-manager" id="prioritiesManager">
+                        <div class="loading">Loading priorities</div>
+                    </div>
+                    <div class="add-category-btn" onclick="addNewCategory()">+ Add New Category</div>
                 </div>
             </div>
         </main>
