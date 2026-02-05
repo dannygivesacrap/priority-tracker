@@ -10,19 +10,18 @@ let calendarInitialized = false;
 
 // Initialize Google Calendar API
 function initCalendarAPI() {
-    // Load the Google API client library
-    gapi.load('client:auth2', async () => {
+    // Load the Google API client library (client only, not auth2)
+    gapi.load('client', async () => {
         try {
             await gapi.client.init({
                 apiKey: GOOGLE_API_KEY,
-                clientId: GOOGLE_CLIENT_ID,
-                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
-                scope: CALENDAR_SCOPES
+                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest']
             });
 
             calendarInitialized = true;
+            console.log('Google Calendar API initialized');
 
-            // Check if user is already signed in via Firebase
+            // Check if user has a token from Firebase auth
             const token = sessionStorage.getItem('googleAccessToken');
             if (token) {
                 gapi.client.setToken({ access_token: token });
@@ -211,7 +210,7 @@ function renderCalendarError() {
     const html = `
         <div class="calendar-empty">
             <p>Could not load calendar</p>
-            <button class="calendar-auth-btn" onclick="loadCalendarEvents()">
+            <button class="calendar-auth-btn" onclick="retryCalendar()">
                 Retry
             </button>
         </div>
@@ -219,6 +218,15 @@ function renderCalendarError() {
 
     if (container) container.innerHTML = html;
     if (mobileContainer) mobileContainer.innerHTML = html;
+}
+
+// Retry calendar initialization
+function retryCalendar() {
+    if (calendarInitialized) {
+        authorizeCalendar();
+    } else {
+        initCalendarAPI();
+    }
 }
 
 // Helper: escape HTML
