@@ -492,37 +492,36 @@ function showTaskDropdown(taskItem, type) {
 
     document.body.appendChild(dropdown);
 
-        // Add event listeners
-        dropdown.querySelectorAll('.dropdown-item[data-action]').forEach(item => {
-            item.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const action = item.dataset.action;
+    // Add event listeners
+    dropdown.querySelectorAll('.dropdown-item[data-action]').forEach(item => {
+        item.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const action = item.dataset.action;
 
-                if (action === 'tomorrow') {
-                    await moveTask(taskId, 'tomorrow');
-                } else if (action === 'nextWeek') {
-                    await moveTask(taskId, 'nextWeek');
-                } else if (action === 'backburner') {
-                    await moveTask(taskId, 'backburner');
-                } else if (action === 'recurring-daily') {
-                    await setRecurring(taskId, 'daily');
-                } else if (action === 'recurring-weekly') {
-                    await setRecurring(taskId, 'weekly');
-                } else if (action === 'recurring-monthly') {
-                    await setRecurring(taskId, 'monthly');
-                } else if (action === 'recurring-none') {
-                    await updateTask(taskId, { recurring: null, recurringPattern: null });
-                    showToast('Recurring removed');
-                } else if (action === 'delete') {
-                    if (confirm('Delete this task?')) {
-                        await deleteTask(taskId);
-                    }
+            if (action === 'tomorrow') {
+                await moveTask(taskId, 'tomorrow');
+            } else if (action === 'nextWeek') {
+                await moveTask(taskId, 'nextWeek');
+            } else if (action === 'backburner') {
+                await moveTask(taskId, 'backburner');
+            } else if (action === 'recurring-daily') {
+                await setRecurring(taskId, 'daily');
+            } else if (action === 'recurring-weekly') {
+                await setRecurring(taskId, 'weekly');
+            } else if (action === 'recurring-monthly') {
+                await setRecurring(taskId, 'monthly');
+            } else if (action === 'recurring-none') {
+                await updateTask(taskId, { recurring: null, recurringPattern: null });
+                showToast('Recurring removed');
+            } else if (action === 'delete') {
+                if (confirm('Delete this task?')) {
+                    await deleteTask(taskId);
                 }
+            }
 
-                dropdown.classList.remove('show');
-            });
+            dropdown.remove();
         });
-    }
+    });
 
     dropdown.classList.add('show');
 
