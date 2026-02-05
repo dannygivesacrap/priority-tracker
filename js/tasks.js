@@ -212,17 +212,26 @@ function getTasksByCategory(type, category) {
         // Skip recurring tasks from other sections (they show in recurring)
         if (task.recurring && category !== 'today') return false;
 
-        // Check due date for dynamic categorization
+        // Check due date for dynamic categorization using calendar weeks
         if (task.dueDate) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const dueDate = new Date(task.dueDate);
             dueDate.setHours(0, 0, 0, 0);
-            const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
 
-            if (category === 'today' && diffDays <= 0) return true;
-            if (category === 'thisWeek' && diffDays > 0 && diffDays <= 7) return true;
-            if (category === 'nextWeek' && diffDays > 7) return true;
+            // Get end of this week (Sunday)
+            const endOfThisWeek = new Date(today);
+            const daysUntilSunday = 7 - today.getDay();
+            endOfThisWeek.setDate(today.getDate() + daysUntilSunday);
+
+            // Get end of next week
+            const endOfNextWeek = new Date(endOfThisWeek);
+            endOfNextWeek.setDate(endOfNextWeek.getDate() + 7);
+
+            if (category === 'today' && dueDate <= today) return true;
+            if (category === 'thisWeek' && dueDate > today && dueDate <= endOfThisWeek) return true;
+            if (category === 'nextWeek' && dueDate > endOfThisWeek && dueDate <= endOfNextWeek) return true;
+            if (category === 'beyond' && dueDate > endOfNextWeek) return true;
         }
 
         return task.category === category;
@@ -278,17 +287,17 @@ function renderWorkView() {
     const sections = [
         { id: 'today', label: 'Today' },
         { id: 'thisWeek', label: 'This Week' },
-        { id: 'nextWeek', label: 'Next Week & Beyond' },
+        { id: 'nextWeek', label: 'Next Week' },
+        { id: 'beyond', label: 'Beyond' },
         { id: 'backburner', label: 'Backburner' },
         { id: 'recurring', label: 'Recurring' }
     ];
 
     sections.forEach(section => {
         const sectionTasks = getTasksByCategory('work', section.id);
-        if (sectionTasks.length > 0 || section.id === 'today') {
-            const sectionEl = createTaskSection(section.label, sectionTasks, 'work');
-            container.appendChild(sectionEl);
-        }
+        // Always show all sections
+        const sectionEl = createTaskSection(section.label, sectionTasks, 'work');
+        container.appendChild(sectionEl);
     });
 }
 
@@ -302,17 +311,17 @@ function renderPersonalView() {
     const sections = [
         { id: 'today', label: 'Today' },
         { id: 'thisWeek', label: 'This Week' },
-        { id: 'nextWeek', label: 'Next Week & Beyond' },
+        { id: 'nextWeek', label: 'Next Week' },
+        { id: 'beyond', label: 'Beyond' },
         { id: 'backburner', label: 'Backburner' },
         { id: 'recurring', label: 'Recurring' }
     ];
 
     sections.forEach(section => {
         const sectionTasks = getTasksByCategory('personal', section.id);
-        if (sectionTasks.length > 0 || section.id === 'today') {
-            const sectionEl = createTaskSection(section.label, sectionTasks, 'personal');
-            container.appendChild(sectionEl);
-        }
+        // Always show all sections
+        const sectionEl = createTaskSection(section.label, sectionTasks, 'personal');
+        container.appendChild(sectionEl);
     });
 }
 
@@ -489,6 +498,7 @@ function showTaskDropdown(taskItem, type) {
     const dropdown = document.createElement('div');
     dropdown.className = 'dropdown';
     dropdown.innerHTML = `
+        <div class="dropdown-item" data-action="setDueDate">\ud83d\udcc6 Set Due Date</div>
         <div class="dropdown-item" data-action="tomorrow">\u23f0 Delay to Tomorrow</div>
         <div class="dropdown-item" data-action="nextWeek">\ud83d\udcc5 Delay to Next Week</div>
         <div class="dropdown-item" data-action="backburner">\ud83d\udd25 Move to Backburner</div>
@@ -521,7 +531,9 @@ function showTaskDropdown(taskItem, type) {
             e.stopPropagation();
             const action = item.dataset.action;
 
-            if (action === 'tomorrow') {
+            if (action === 'setDueDate') {
+                showDatePicker(taskId);
+            } else if (action === 'tomorrow') {
                 await moveTask(taskId, 'tomorrow');
             } else if (action === 'nextWeek') {
                 await moveTask(taskId, 'nextWeek');
@@ -701,4 +713,89 @@ function getPriorityName(priorityId, type) {
     const priorityList = priorities[type] || [];
     const priority = priorityList.find(p => p.id === priorityId);
     return priority ? priority.title : '';
+}
+
+// Show date picker for setting due date
+function showDatePicker(taskId) {
+    // Close any existing date pickers
+    document.querySelectorAll('.date-picker-popup').forEach(p => p.remove());
+
+    const task = [...tasks.work, ...tasks.personal].find(t => t.id === taskId);
+    if (!task) return;
+
+    const popup = document.createElement('div');
+    popup.className = 'date-picker-popup';
+
+    // Get current date for default value
+    const today = new Date();
+    const currentDate = task.dueDate || today.toISOString().split('T')[0];
+
+    popup.innerHTML = `
+        <div class="date-picker-header">Set Due Date</div>
+        <input type="date" class="date-picker-input" value="${currentDate}" />
+        <div class="date-picker-quick">
+            <button data-days="0">Today</button>
+            <button data-days="1">Tomorrow</button>
+            <button data-days="7">Next Week</button>
+            <button data-clear="true">Clear</button>
+        </div>
+        <div class="date-picker-actions">
+            <button class="date-picker-cancel">Cancel</button>
+            <button class="date-picker-save">Save</button>
+        </div>
+    `;
+
+    // Center the popup
+    popup.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+        padding: 20px;
+        z-index: 10001;
+        min-width: 280px;
+    `;
+
+    document.body.appendChild(popup);
+
+    const input = popup.querySelector('.date-picker-input');
+
+    // Quick date buttons
+    popup.querySelectorAll('.date-picker-quick button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.clear) {
+                input.value = '';
+            } else {
+                const days = parseInt(btn.dataset.days);
+                const date = new Date();
+                date.setDate(date.getDate() + days);
+                input.value = date.toISOString().split('T')[0];
+            }
+        });
+    });
+
+    // Cancel button
+    popup.querySelector('.date-picker-cancel').addEventListener('click', () => {
+        popup.remove();
+    });
+
+    // Save button
+    popup.querySelector('.date-picker-save').addEventListener('click', async () => {
+        const newDate = input.value || null;
+        await updateTask(taskId, { dueDate: newDate });
+        showToast(newDate ? `Due date set to ${formatDate(newDate)}` : 'Due date cleared');
+        popup.remove();
+    });
+
+    // Close on click outside
+    const closePopup = (e) => {
+        if (!popup.contains(e.target)) {
+            popup.remove();
+            document.removeEventListener('click', closePopup);
+        }
+    };
+    setTimeout(() => document.addEventListener('click', closePopup), 0);
 }

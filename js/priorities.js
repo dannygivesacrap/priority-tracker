@@ -6,6 +6,15 @@ let priorities = {};
 // Category list (default categories)
 let categories = ['work', 'personal'];
 
+// Category settings (labels and colors)
+let categorySettings = {
+    work: { label: 'Work', color: 'indigo' },
+    personal: { label: 'Personal', color: 'green' }
+};
+
+// Available colors for categories
+const categoryColors = ['indigo', 'green', 'orange', 'pink', 'purple', 'red', 'blue', 'teal'];
+
 // Real-time listeners
 let priorityListeners = [];
 let categoriesListener = null;
@@ -28,9 +37,21 @@ function loadPriorities() {
                 categories = ['work', 'personal'];
             }
 
+            // Load category settings (labels and colors)
+            if (doc.exists && doc.data().settings) {
+                categorySettings = { ...categorySettings, ...doc.data().settings };
+            }
+
             // Initialize priorities object for each category
             categories.forEach(cat => {
                 if (!priorities[cat]) priorities[cat] = [];
+                // Set default settings for new categories
+                if (!categorySettings[cat]) {
+                    categorySettings[cat] = {
+                        label: cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' '),
+                        color: categoryColors[categories.indexOf(cat) % categoryColors.length]
+                    };
+                }
             });
 
             // Load priorities for each category
@@ -148,10 +169,19 @@ async function addNewCategory() {
     categories.push(categoryId);
     priorities[categoryId] = [];
 
+    // Assign a color that's not already used, or cycle through
+    const usedColors = Object.values(categorySettings).map(s => s.color);
+    const availableColor = categoryColors.find(c => !usedColors.includes(c)) || categoryColors[categories.length % categoryColors.length];
+
+    categorySettings[categoryId] = {
+        label: name.trim(),
+        color: availableColor
+    };
+
     const userDoc = getUserDoc();
     await userDoc.collection('settings').doc('categories').set({
         list: categories,
-        labels: { [categoryId]: name.trim() }
+        settings: categorySettings
     }, { merge: true });
 
     await userDoc.collection('priorities').doc(categoryId).set({
@@ -164,19 +194,17 @@ async function addNewCategory() {
 
 // Delete a category
 async function deleteCategory(categoryId) {
-    if (categoryId === 'work' || categoryId === 'personal') {
-        showToast('Cannot delete default categories');
-        return;
-    }
-
-    if (!confirm(`Delete category "${categoryId}" and all its priorities?`)) return;
+    const label = getCategoryLabel(categoryId);
+    if (!confirm(`Delete category "${label}" and all its priorities?`)) return;
 
     categories = categories.filter(c => c !== categoryId);
     delete priorities[categoryId];
+    delete categorySettings[categoryId];
 
     const userDoc = getUserDoc();
     await userDoc.collection('settings').doc('categories').set({
-        list: categories
+        list: categories,
+        settings: categorySettings
     }, { merge: true });
 
     await userDoc.collection('priorities').doc(categoryId).delete();
@@ -184,13 +212,59 @@ async function deleteCategory(categoryId) {
     showToast('Category deleted');
 }
 
+// Edit category label
+async function editCategoryLabel(categoryId) {
+    const currentLabel = getCategoryLabel(categoryId);
+    const newLabel = prompt('Enter category name:', currentLabel);
+
+    if (!newLabel || newLabel.trim() === currentLabel) return;
+
+    categorySettings[categoryId] = {
+        ...categorySettings[categoryId],
+        label: newLabel.trim()
+    };
+
+    const userDoc = getUserDoc();
+    await userDoc.collection('settings').doc('categories').set({
+        list: categories,
+        settings: categorySettings
+    }, { merge: true });
+
+    showToast('Category renamed');
+}
+
+// Set category color
+async function setCategoryColor(categoryId, color) {
+    categorySettings[categoryId] = {
+        ...categorySettings[categoryId],
+        color: color
+    };
+
+    const userDoc = getUserDoc();
+    await userDoc.collection('settings').doc('categories').set({
+        list: categories,
+        settings: categorySettings
+    }, { merge: true });
+
+    renderPriorities();
+    showToast('Color updated');
+}
+
+// Get category color
+function getCategoryColor(categoryId) {
+    return categorySettings[categoryId]?.color || 'indigo';
+}
+
 // Get category label
 function getCategoryLabel(categoryId) {
-    const labels = {
+    if (categorySettings[categoryId]?.label) {
+        return categorySettings[categoryId].label;
+    }
+    const defaultLabels = {
         'work': 'Work',
         'personal': 'Personal'
     };
-    return labels[categoryId] || categoryId.charAt(0).toUpperCase() + categoryId.slice(1).replace(/-/g, ' ');
+    return defaultLabels[categoryId] || categoryId.charAt(0).toUpperCase() + categoryId.slice(1).replace(/-/g, ' ');
 }
 
 // Render priorities to DOM
@@ -237,19 +311,29 @@ function renderPrioritiesManager() {
 
     categories.forEach(cat => {
         const label = getCategoryLabel(cat);
-        const isDefault = cat === 'work' || cat === 'personal';
+        const color = getCategoryColor(cat);
         const catPriorities = (priorities[cat] || []).sort((a, b) => a.order - b.order);
 
         html += `
             <div class="priority-category" data-category="${cat}">
                 <div class="priority-category-header">
                     <span>${label}</span>
-                    ${!isDefault ? `<button onclick="deleteCategory('${cat}')">\u2715 Delete</button>` : ''}
+                    <div>
+                        <button class="category-edit-btn" onclick="editCategoryLabel('${cat}')">\u270f\ufe0f Edit</button>
+                        <button onclick="deleteCategory('${cat}')">\u2715 Delete</button>
+                    </div>
+                </div>
+                <div class="category-color-picker" data-category="${cat}">
+                    ${categoryColors.map(c => `
+                        <div class="color-option ${c} ${c === color ? 'selected' : ''}"
+                             onclick="setCategoryColor('${cat}', '${c}')"
+                             title="${c}"></div>
+                    `).join('')}
                 </div>
                 <div class="priority-items" data-category="${cat}">
                     ${catPriorities.map((p, i) => `
                         <div class="priority-item" data-priority-id="${p.id}" data-category="${cat}" draggable="true">
-                            <span class="priority-item-num ${cat}">${i + 1}</span>
+                            <span class="priority-item-num ${color}">${i + 1}</span>
                             <span class="priority-item-title">${escapeHtml(p.title)}</span>
                             <div class="priority-item-actions">
                                 <button onclick="editPriorityInManager('${cat}', '${p.id}')" title="Edit">\u270f\ufe0f</button>
@@ -444,10 +528,11 @@ async function movePriorityToCategory(priorityId, fromCategory, toCategory, befo
 // Render a priority list into a container
 function renderPriorityList(container, priorityList, type) {
     const sortedPriorities = [...priorityList].sort((a, b) => a.order - b.order);
+    const color = getCategoryColor(type);
 
     const priorityChips = sortedPriorities.map((priority, index) => `
         <div class="priority-chip" data-priority-id="${priority.id}" data-type="${type}">
-            <span class="priority-num ${type}">${index + 1}</span>
+            <span class="priority-num ${color}">${index + 1}</span>
             <span class="priority-title">${escapeHtml(priority.title)}</span>
         </div>
     `).join('');

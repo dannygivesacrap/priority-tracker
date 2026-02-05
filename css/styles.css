@@ -1346,6 +1346,150 @@ body {
     background: #f8f9ff;
 }
 
+/* ===== DATE PICKER POPUP ===== */
+.date-picker-popup {
+    font-family: 'Sora', sans-serif;
+}
+
+.date-picker-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 16px;
+}
+
+.date-picker-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 12px;
+}
+
+.date-picker-input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.date-picker-quick {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.date-picker-quick button {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: white;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.date-picker-quick button:hover {
+    border-color: #6366f1;
+    background: #f8f9ff;
+}
+
+.date-picker-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.date-picker-cancel {
+    padding: 10px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.date-picker-cancel:hover {
+    background: #f8f9fa;
+}
+
+.date-picker-save {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.date-picker-save:hover {
+    transform: scale(1.02);
+}
+
+/* ===== CATEGORY COLOR PICKER ===== */
+.category-color-picker {
+    display: flex;
+    gap: 6px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f3f5;
+    background: #fafafa;
+}
+
+.color-option {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border-color: #343a40;
+}
+
+.color-option.indigo { background: #6366f1; }
+.color-option.green { background: #10b981; }
+.color-option.orange { background: #f97316; }
+.color-option.pink { background: #ec4899; }
+.color-option.purple { background: #8b5cf6; }
+.color-option.red { background: #ef4444; }
+.color-option.blue { background: #3b82f6; }
+.color-option.teal { background: #14b8a6; }
+
+.priority-item-num.green, .priority-num.green { background: #10b981; }
+.priority-item-num.orange, .priority-num.orange { background: #f97316; }
+.priority-item-num.pink, .priority-num.pink { background: #ec4899; }
+.priority-item-num.purple, .priority-num.purple { background: #8b5cf6; }
+.priority-item-num.red, .priority-num.red { background: #ef4444; }
+.priority-item-num.blue, .priority-num.blue { background: #3b82f6; }
+.priority-item-num.teal, .priority-num.teal { background: #14b8a6; }
+.priority-item-num.indigo, .priority-num.indigo { background: #6366f1; }
+
+.category-edit-btn {
+    background: none;
+    border: none;
+    color: #6366f1;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.category-edit-btn:hover {
+    background: #f0f0ff;
+}
+
 /* ===== LOADING ===== */
 .loading {
     display: flex;
