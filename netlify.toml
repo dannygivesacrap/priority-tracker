@@ -1,0 +1,6 @@
+[build]
+  publish = "."
+
+# Firebase/Google API keys are public by design - security comes from Firebase rules
+[build.processing]
+  skip_processing = false
