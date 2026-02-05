@@ -57,7 +57,7 @@ async function authorizeCalendar() {
     }
 }
 
-// Load today's calendar events
+// Load today's calendar events from ALL calendars
 async function loadCalendarEvents() {
     try {
         const today = new Date();
@@ -66,16 +66,46 @@ async function loadCalendarEvents() {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const response = await gapi.client.calendar.events.list({
-            calendarId: 'primary',
-            timeMin: today.toISOString(),
-            timeMax: tomorrow.toISOString(),
-            singleEvents: true,
-            orderBy: 'startTime',
-            maxResults: 20
+        // First, get list of all calendars
+        const calendarList = await gapi.client.calendar.calendarList.list();
+        const calendars = calendarList.result.items || [];
+
+        console.log('Found calendars:', calendars.map(c => c.summary));
+
+        // Fetch events from all calendars
+        let allEvents = [];
+
+        for (const calendar of calendars) {
+            try {
+                const response = await gapi.client.calendar.events.list({
+                    calendarId: calendar.id,
+                    timeMin: today.toISOString(),
+                    timeMax: tomorrow.toISOString(),
+                    singleEvents: true,
+                    orderBy: 'startTime',
+                    maxResults: 20
+                });
+
+                const events = (response.result.items || []).map(event => ({
+                    ...event,
+                    calendarName: calendar.summary,
+                    calendarColor: calendar.backgroundColor
+                }));
+
+                allEvents = allEvents.concat(events);
+            } catch (err) {
+                console.log(`Could not fetch from calendar ${calendar.summary}:`, err.message);
+            }
+        }
+
+        // Sort all events by start time
+        allEvents.sort((a, b) => {
+            const aTime = a.start.dateTime || a.start.date;
+            const bTime = b.start.dateTime || b.start.date;
+            return new Date(aTime) - new Date(bTime);
         });
 
-        calendarEvents = response.result.items || [];
+        calendarEvents = allEvents;
         renderCalendar();
     } catch (error) {
         console.error('Error loading calendar events:', error);
