@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* ===== APP SHELL ===== */
+        .app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 64px;
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0;
+            gap: 8px;
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .sidebar.expanded {
+            width: 220px;
+            align-items: flex-start;
+        }
+
+        .sidebar-toggle {
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            color: #6c757d;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .sidebar.expanded .sidebar-toggle {
+            margin-left: 12px;
+        }
+
+        .sidebar-toggle:hover {
+            background: #2d2d44;
+            color: white;
+        }
+
+        .sidebar-item {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .sidebar.expanded .sidebar-item {
+            width: calc(100% - 24px);
+            margin: 0 12px;
+            justify-content: flex-start;
+            padding: 0 14px;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .sidebar-item:hover {
+            background: #2d2d44;
+            color: white;
+        }
+
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .sidebar-item-label {
+            display: none;
+            font-weight: 500;
+        }
+
+        .sidebar.expanded .sidebar-item-label {
+            display: block;
+        }
+
+        .sidebar-divider {
+            width: 32px;
+            height: 1px;
+            background: #2d2d44;
+            margin: 12px 0;
+        }
+
+        .sidebar.expanded .sidebar-divider {
+            width: calc(100% - 24px);
+            margin: 12px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ===== PRIORITIES STRIP ===== */
+        .priorities-strip {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 14px 24px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .priorities-strip::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1 0%, #ec4899 50%, #f97316 100%);
+        }
+
+        .priorities-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .priorities-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .priorities-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            min-width: 70px;
+        }
+
+        .priorities-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .priority-chip {
+            padding: 5px 12px 5px 6px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #495057;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .priority-chip:hover {
+            border-color: #6366f1;
+            background: #f8f9ff;
+        }
+
+        .priority-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .priority-num.work {
+            background: #6366f1;
+        }
+
+        .priority-num.personal {
+            background: #10b981;
+        }
+
+        .priority-chip.add {
+            border-style: dashed;
+            color: #adb5bd;
+        }
+
+        .priority-chip.add:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        /* ===== CONTENT AREA ===== */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        /* ===== GREETING CARD ===== */
+        .greeting {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .greeting::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #6366f1 0%, #ec4899 100%);
+        }
+
+        .greeting::after {
+            content: '';
+            position: absolute;
+            right: -30px;
+            top: -30px;
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            opacity: 0.08;
+            border-radius: 50%;
+        }
+
+        .greeting-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: #f1f3f5;
+            border-radius: 8px;
+            color: #868e96;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 1;
+        }
+
+        .greeting-close:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .greeting h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+
+        .greeting p {
+            font-size: 14px;
+            color: #6c757d;
+            line-height: 1.5;
+            max-width: 600px;
+        }
+
+        .greeting .punchline {
+            font-weight: 600;
+            color: #495057;
+            margin-top: 4px;
+        }
+
+        /* ===== THREE COLUMN LAYOUT ===== */
+        .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr minmax(280px, 340px);
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ===== SECTION HEADERS ===== */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .section-header h3 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .section-header a {
+            font-size: 12px;
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .section-header a:hover {
+            color: #4f46e5;
+        }
+
+        /* ===== TASK LIST ===== */
+        .task-list {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .task-item {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f3f5;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-item:hover {
+            background: #f8f9fa;
+            border-left-color: #6366f1;
+        }
+
+        .task-item:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ced4da;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .task-checkbox:hover {
+            border-color: #6366f1;
+            transform: scale(1.1);
+        }
+
+        .task-checkbox.checked {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-color: #6366f1;
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .task-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #343a40;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+            color: #adb5bd;
+        }
+
+        .task-tag {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 8px;
+            background: #6366f1;
+            color: white;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .task-tag.green {
+            background: #10b981;
+        }
+
+        .task-recurring {
+            font-size: 11px;
+            font-weight: 600;
+            color: #10b981;
+            flex-shrink: 0;
+        }
+
+        .task-meta {
+            font-size: 11px;
+            color: #868e96;
+            flex-shrink: 0;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .task-action-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .task-action-btn:hover {
+            border-color: #6366f1;
+            background: #f8f9ff;
+        }
+
+        /* ===== ADD TASK BUTTON ===== */
+        .add-task {
+            padding: 10px 14px;
+            margin-top: 10px;
+            text-align: center;
+            color: #868e96;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px dashed #ced4da;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-task:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+            background: #f8f9ff;
+        }
+
+        /* ===== CALENDAR ===== */
+        .calendar {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .calendar-header {
+            background: #1a1a2e;
+            color: white;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-header h4 {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .calendar-header span {
+            font-size: 12px;
+            color: #adb5bd;
+        }
+
+        .calendar-events {
+            padding: 4px 0;
+        }
+
+        .calendar-event {
+            padding: 10px 14px;
+            display: flex;
+            gap: 12px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .calendar-event:hover {
+            background: #f8f9fa;
+            border-left-color: #6366f1;
+        }
+
+        .event-color {
+            width: 4px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .event-color.blue { background: #6366f1; }
+        .event-color.green { background: #10b981; }
+        .event-color.purple { background: #a855f7; }
+        .event-color.orange { background: #f97316; }
+
+        .event-time {
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+            min-width: 50px;
+        }
+
+        .event-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .event-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #343a40;
+        }
+
+        .event-location {
+            font-size: 11px;
+            color: #868e96;
+        }
+
+        /* ===== QUICK ACTIONS DROPDOWN ===== */
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            min-width: 180px;
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+
+        .dropdown.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #343a40;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .dropdown-item.danger {
+            color: #dc3545;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 4px 0;
+        }
+
+        /* ===== CELEBRATION ===== */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+            z-index: 10000;
+            animation: toast-pop 0.3s ease-out;
+        }
+
+        @keyframes toast-pop {
+            0% { transform: translateX(-50%) scale(0.8) translateY(20px); opacity: 0; }
+            100% { transform: translateX(-50%) scale(1) translateY(0); opacity: 1; }
+        }
+
+        .champagne-container {
+            position: fixed;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 80px;
+            animation: champagne-pop 1.5s ease-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes champagne-pop {
+            0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+            30% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1); opacity: 0; }
+        }
+
+        .emoji-burst {
+            position: absolute;
+            font-size: 36px;
+            animation: emoji-fly 2s ease-out forwards;
+        }
+
+        @keyframes emoji-fly {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+            100% { transform: scale(0.5) rotate(360deg) translateY(-100px); opacity: 0; }
+        }
+
+        .cat-celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: cat-pop 0.4s ease-out forwards;
+            z-index: 10001;
+        }
+
+        @keyframes cat-pop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            60% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .cat-celebration img {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .cat-celebration p {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .rainbow-wave {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(99, 102, 241, 0.2) 20%,
+                rgba(236, 72, 153, 0.2) 40%,
+                rgba(249, 115, 22, 0.2) 60%,
+                rgba(16, 185, 129, 0.2) 80%,
+                rgba(99, 102, 241, 0.2) 100%
+            );
+            animation: rainbow-rise 2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes rainbow-rise {
+            0% { transform: translateY(100%); opacity: 0; }
+            30% { opacity: 1; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .star {
+            position: absolute;
+            font-size: 24px;
+            animation: star-burst 1.5s ease-out forwards;
+        }
+
+        @keyframes star-burst {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1) rotate(360deg); opacity: 0; }
+        }
+
+        /* ===== FOCUS MODE ===== */
+        .focus-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            color: white;
+        }
+
+        .focus-overlay.active {
+            display: flex;
+        }
+
+        .focus-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .focus-close:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .focus-timer {
+            font-size: 120px;
+            font-weight: 300;
+            letter-spacing: -4px;
+            margin-bottom: 24px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .focus-task {
+            font-size: 24px;
+            font-weight: 500;
+            max-width: 500px;
+            text-align: center;
+            margin-bottom: 48px;
+            opacity: 0.9;
+        }
+
+        .focus-controls {
+            display: flex;
+            gap: 16px;
+        }
+
+        .focus-btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .focus-btn.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .focus-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .focus-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .focus-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1 0%, #ec4899 100%);
+            transition: width 1s linear;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .three-col {
+                grid-template-columns: 1fr 1fr;
+            }
+            .three-col > div:last-child {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .three-col {
+                grid-template-columns: 1fr;
+            }
+            .three-col > div:last-child {
+                grid-column: span 1;
+            }
+            .sidebar {
+                position: fixed;
+                left: -64px;
+                height: 100%;
+                transition: left 0.3s;
+            }
+            .sidebar.mobile-open {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <a class="sidebar-item active" href="#" onclick="showView('dashboard')">
+                <span>📊</span>
+                <span class="sidebar-item-label">Dashboard</span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <a class="sidebar-item" href="#" onclick="showView('work')">
+                <span>💼</span>
+                <span class="sidebar-item-label">Work</span>
+            </a>
+            <a class="sidebar-item" href="#" onclick="showView('personal')">
+                <span>🏠</span>
+                <span class="sidebar-item-label">Personal</span>
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Priorities Strip -->
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Work</span>
+                    <div class="priorities-list">
+                        <div class="priority-chip"><span class="priority-num work">1</span> Q1 Product Launch</div>
+                        <div class="priority-chip"><span class="priority-num work">2</span> Team Hiring</div>
+                        <div class="priority-chip"><span class="priority-num work">3</span> Platform Migration</div>
+                        <div class="priority-chip"><span class="priority-num work">4</span> Q2 Planning</div>
+                        <div class="priority-chip"><span class="priority-num work">5</span> Side Project</div>
+                        <div class="priority-chip add">+</div>
+                    </div>
+                </div>
+                <div class="priorities-row">
+                    <span class="priorities-label">Personal</span>
+                    <div class="priorities-list">
+                        <div class="priority-chip"><span class="priority-num personal">1</span> Health & Fitness</div>
+                        <div class="priority-chip"><span class="priority-num personal">2</span> Learn Spanish</div>
+                        <div class="priority-chip"><span class="priority-num personal">3</span> Home Renovation</div>
+                        <div class="priority-chip"><span class="priority-num personal">4</span> Build Savings</div>
+                        <div class="priority-chip"><span class="priority-num personal">5</span> Family Time</div>
+                        <div class="priority-chip"><span class="priority-num personal">6</span> Reading</div>
+                        <div class="priority-chip"><span class="priority-num personal">7</span> Guitar</div>
+                        <div class="priority-chip"><span class="priority-num personal">8</span> Travel Planning</div>
+                        <div class="priority-chip add">+</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Morning Greeting -->
+                <div class="greeting" id="greeting">
+                    <button class="greeting-close" onclick="dismissGreeting()">×</button>
+                    <h2>Good morning, Danny! ☀️</h2>
+                    <p>Why do programmers prefer dark mode?</p>
+                    <p class="punchline">Because light attracts bugs.</p>
+                </div>
+
+                <!-- Three Column Layout -->
+                <div class="three-col">
+                    <!-- Work Tasks -->
+                    <div>
+                        <div class="section-header">
+                            <h3>Work — Today</h3>
+                            <a href="#">View all</a>
+                        </div>
+                        <div class="task-list">
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Daily standup</span>
+                                    <span class="task-recurring">↻</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Review PRs for launch</span>
+                                    <span class="task-tag">Q1</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Prep all-hands slides</span>
+                                    <span class="task-meta">3pm</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Interview candidate</span>
+                                    <span class="task-tag">Hiring</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Weekly team sync</span>
+                                    <span class="task-recurring">↻ Mon</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="add-task">+ Add work task</div>
+                    </div>
+
+                    <!-- Personal Tasks -->
+                    <div>
+                        <div class="section-header">
+                            <h3>Personal — Today</h3>
+                            <a href="#">View all</a>
+                        </div>
+                        <div class="task-list">
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Spanish practice</span>
+                                    <span class="task-recurring">↻ 45d 🔥</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Morning workout</span>
+                                    <span class="task-recurring">↻</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Grocery shopping</span>
+                                    <span class="task-meta">Evening</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Call contractor</span>
+                                    <span class="task-tag green">Home</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                <div class="task-content">
+                                    <span class="task-title">Read for 20 minutes</span>
+                                    <span class="task-recurring">↻</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="task-action-btn" title="Focus">⏱</button>
+                                    <button class="task-action-btn" title="More">⋯</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="add-task">+ Add personal task</div>
+                    </div>
+
+                    <!-- Calendar -->
+                    <div>
+                        <div class="calendar">
+                            <div class="calendar-header">
+                                <h4>📅 Calendar</h4>
+                                <span>Wed, Feb 5</span>
+                            </div>
+                            <div class="calendar-events">
+                                <div class="calendar-event">
+                                    <div class="event-color blue"></div>
+                                    <span class="event-time">9:00</span>
+                                    <div class="event-details">
+                                        <div class="event-title">Team Standup</div>
+                                        <div class="event-location">Zoom</div>
+                                    </div>
+                                </div>
+                                <div class="calendar-event">
+                                    <div class="event-color green"></div>
+                                    <span class="event-time">11:00</span>
+                                    <div class="event-details">
+                                        <div class="event-title">1:1 with Sarah</div>
+                                        <div class="event-location">Conference Room B</div>
+                                    </div>
+                                </div>
+                                <div class="calendar-event">
+                                    <div class="event-color purple"></div>
+                                    <span class="event-time">2:00</span>
+                                    <div class="event-details">
+                                        <div class="event-title">All-Hands Meeting</div>
+                                        <div class="event-location">Main Hall</div>
+                                    </div>
+                                </div>
+                                <div class="calendar-event">
+                                    <div class="event-color orange"></div>
+                                    <span class="event-time">5:30</span>
+                                    <div class="event-details">
+                                        <div class="event-title">Gym - Leg Day</div>
+                                        <div class="event-location">Equinox</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div class="celebration-overlay" id="celebrationOverlay"></div>
+
+    <!-- Focus Mode Overlay -->
+    <div class="focus-overlay" id="focusOverlay">
+        <button class="focus-close" onclick="closeFocus()">✕ Exit Focus</button>
+        <div class="focus-timer" id="focusTimer">20:00</div>
+        <div class="focus-task" id="focusTask">Review PRs for launch</div>
+        <div class="focus-controls">
+            <button class="focus-btn secondary">Pause</button>
+            <button class="focus-btn primary" onclick="closeFocus()">Complete</button>
+        </div>
+        <div class="focus-progress" id="focusProgress" style="width: 0%"></div>
+    </div>
+
+    <script>
+        // Sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('expanded');
+        }
+
+        // Dismiss greeting
+        function dismissGreeting() {
+            document.getElementById('greeting').style.display = 'none';
+        }
+
+        // Celebration types
+        const celebrationTypes = ['confetti', 'champagne', 'cat', 'emoji', 'stars', 'rainbow'];
+        const toastMessages = [
+            "Nice work! ✨", "You're on fire! 🔥", "Crushed it! 💪",
+            "Boom! 💥", "Nailed it! 🎯", "Amazing! 🌟",
+            "Keep going! 🚀", "Unstoppable! ⚡", "Legend! 👑"
+        ];
+
+        function celebrateTask(checkbox) {
+            if (checkbox.classList.contains('checked')) return;
+
+            checkbox.classList.add('checked');
+
+            const taskItem = checkbox.closest('.task-item');
+            if (taskItem) {
+                const title = taskItem.querySelector('.task-title');
+                if (title) title.classList.add('completed');
+            }
+
+            const type = celebrationTypes[Math.floor(Math.random() * celebrationTypes.length)];
+            const overlay = document.getElementById('celebrationOverlay');
+
+            switch(type) {
+                case 'confetti': createConfetti(overlay); break;
+                case 'champagne': createChampagne(overlay); break;
+                case 'cat': createCatPopup(); break;
+                case 'emoji': createEmojiBurst(overlay); break;
+                case 'stars': createStarBurst(overlay); break;
+                case 'rainbow': createRainbow(overlay); break;
+            }
+
+            showToast(toastMessages[Math.floor(Math.random() * toastMessages.length)]);
+        }
+
+        function createConfetti(overlay) {
+            const colors = ['#6366f1', '#ec4899', '#f97316', '#10b981', '#fbbf24', '#8b5cf6'];
+            for (let i = 0; i < 60; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = (6 + Math.random() * 8) + 'px';
+                confetti.style.height = (6 + Math.random() * 8) + 'px';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.animationDuration = (2 + Math.random()) + 's';
+                overlay.appendChild(confetti);
+            }
+            setTimeout(() => overlay.innerHTML = '', 3500);
+        }
+
+        function createChampagne(overlay) {
+            const container = document.createElement('div');
+            container.className = 'champagne-container';
+            container.innerHTML = '🍾';
+            overlay.appendChild(container);
+            createConfetti(overlay);
+            setTimeout(() => container.remove(), 2000);
+        }
+
+        function createCatPopup() {
+            const popup = document.createElement('div');
+            popup.className = 'cat-celebration';
+            popup.innerHTML = `
+                <img src="https://cataas.com/cat/gif?width=200&height=150&t=${Date.now()}"
+                     alt="Celebration cat"
+                     onerror="this.src='https://placekitten.com/200/150'">
+                <p>Purrfect! 🐱</p>
+            `;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 3000);
+        }
+
+        function createEmojiBurst(overlay) {
+            const emojis = ['🎉', '🎊', '⭐', '💫', '✨', '🌟', '🔥', '💪', '👏', '🙌'];
+            for (let i = 0; i < 15; i++) {
+                const emoji = document.createElement('div');
+                emoji.className = 'emoji-burst';
+                emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                emoji.style.left = 30 + Math.random() * 40 + '%';
+                emoji.style.top = 40 + Math.random() * 20 + '%';
+                emoji.style.animationDelay = Math.random() * 0.3 + 's';
+                overlay.appendChild(emoji);
+            }
+            setTimeout(() => overlay.innerHTML = '', 2500);
+        }
+
+        function createStarBurst(overlay) {
+            for (let i = 0; i < 30; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.textContent = '⭐';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 0.5 + 's';
+                star.style.fontSize = (16 + Math.random() * 24) + 'px';
+                overlay.appendChild(star);
+            }
+            setTimeout(() => overlay.innerHTML = '', 2000);
+        }
+
+        function createRainbow(overlay) {
+            const wave = document.createElement('div');
+            wave.className = 'rainbow-wave';
+            overlay.appendChild(wave);
+            createEmojiBurst(overlay);
+            setTimeout(() => wave.remove(), 2500);
+        }
+
+        function showToast(message) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // Focus mode
+        function openFocus(task) {
+            document.getElementById('focusTask').textContent = task;
+            document.getElementById('focusOverlay').classList.add('active');
+        }
+
+        function closeFocus() {
+            document.getElementById('focusOverlay').classList.remove('active');
+        }
+    </script>
+</body>
+</html>

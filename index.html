@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✓</text></svg>">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <h1>Priority Tracker</h1>
+        <p>Stay focused on what matters most</p>
+        <button class="login-btn" onclick="signInWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Sign in with Google
+        </button>
+    </div>
+
+    <!-- Main App -->
+    <div class="app" id="app">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+
+            <button class="sidebar-item active" data-view="dashboard">
+                <span>📊</span>
+                <span class="sidebar-item-label">Dashboard</span>
+            </button>
+
+            <div class="sidebar-divider"></div>
+
+            <button class="sidebar-item" data-view="work">
+                <span>💼</span>
+                <span class="sidebar-item-label">Work</span>
+            </button>
+
+            <button class="sidebar-item" data-view="personal">
+                <span>🏠</span>
+                <span class="sidebar-item-label">Personal</span>
+            </button>
+
+            <div class="sidebar-spacer"></div>
+
+            <div class="sidebar-divider"></div>
+
+            <img class="user-avatar" id="userAvatar" src="" alt="User" style="display: none;" onclick="signOut()" title="Sign out">
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Priorities Strip -->
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Work</span>
+                    <div class="priorities-list" id="workPriorities">
+                        <div class="priority-chip add" data-type="work">+</div>
+                    </div>
+                </div>
+                <div class="priorities-row">
+                    <span class="priorities-label">Personal</span>
+                    <div class="priorities-list" id="personalPriorities">
+                        <div class="priority-chip add" data-type="personal">+</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Morning Greeting -->
+                <div class="greeting" id="greeting">
+                    <button class="greeting-close" id="greetingClose">×</button>
+                    <h2>Good morning!</h2>
+                    <p>Why do programmers prefer dark mode?</p>
+                    <p class="punchline">Because light attracts bugs.</p>
+                </div>
+
+                <!-- Dashboard View -->
+                <div class="view active" id="dashboardView">
+                    <div class="three-col">
+                        <!-- Work Tasks -->
+                        <div>
+                            <div class="section-header">
+                                <h3>Work — Today</h3>
+                                <a href="#" onclick="showView('work'); return false;">View all</a>
+                            </div>
+                            <div class="task-list" id="dashboardWorkTasks">
+                                <div class="loading">Loading tasks</div>
+                            </div>
+                            <div class="add-task" data-type="work">+ Add work task</div>
+                        </div>
+
+                        <!-- Personal Tasks -->
+                        <div>
+                            <div class="section-header">
+                                <h3>Personal — Today</h3>
+                                <a href="#" onclick="showView('personal'); return false;">View all</a>
+                            </div>
+                            <div class="task-list" id="dashboardPersonalTasks">
+                                <div class="loading">Loading tasks</div>
+                            </div>
+                            <div class="add-task" data-type="personal">+ Add personal task</div>
+                        </div>
+
+                        <!-- Calendar -->
+                        <div>
+                            <div class="calendar">
+                                <div class="calendar-header">
+                                    <h4>📅 Calendar</h4>
+                                    <span>Today</span>
+                                </div>
+                                <div class="calendar-events" id="calendarEvents">
+                                    <div class="loading">Loading calendar</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work View -->
+                <div class="view" id="workView">
+                    <div class="section-header">
+                        <h3>Work Tasks</h3>
+                    </div>
+                    <div id="workViewTasks">
+                        <div class="loading">Loading tasks</div>
+                    </div>
+                    <div class="add-task" data-type="work" style="max-width: 600px;">+ Add work task</div>
+                </div>
+
+                <!-- Personal View -->
+                <div class="view" id="personalView">
+                    <div class="section-header">
+                        <h3>Personal Tasks</h3>
+                    </div>
+                    <div id="personalViewTasks">
+                        <div class="loading">Loading tasks</div>
+                    </div>
+                    <div class="add-task" data-type="personal" style="max-width: 600px;">+ Add personal task</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Interface -->
+    <div class="mobile-container">
+        <div class="mobile-panels" id="mobilePanels">
+            <!-- Panel 1: Priorities -->
+            <div class="mobile-panel" id="mobilePrioritiesPanel">
+                <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Priorities</h2>
+                <div id="mobilePriorities">
+                    <div class="loading">Loading priorities</div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Dashboard -->
+            <div class="mobile-panel" id="mobileDashboardPanel">
+                <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Today</h2>
+                <div id="mobileDashboardTasks">
+                    <div class="loading">Loading tasks</div>
+                </div>
+                <div class="add-task" data-type="work" style="margin-top: 16px;">+ Add task</div>
+            </div>
+
+            <!-- Panel 3: Calendar -->
+            <div class="mobile-panel" id="mobileCalendarPanel">
+                <div class="calendar" style="border: none; box-shadow: none;">
+                    <div class="calendar-header">
+                        <h4>📅 Calendar</h4>
+                        <span>Today</span>
+                    </div>
+                    <div class="calendar-events" id="mobileCalendarEvents">
+                        <div class="loading">Loading calendar</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <nav class="mobile-nav">
+            <span class="mobile-nav-label">Priorities</span>
+            <div class="mobile-nav-dot active"></div>
+            <div class="mobile-nav-dot"></div>
+            <div class="mobile-nav-dot"></div>
+            <span class="mobile-nav-label">Calendar</span>
+        </nav>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div class="celebration-overlay" id="celebrationOverlay"></div>
+
+    <!-- Focus Mode Overlay -->
+    <div class="focus-overlay" id="focusOverlay">
+        <button class="focus-close">✕ Exit Focus</button>
+        <div class="focus-timer" id="focusTimer">20:00</div>
+        <div class="focus-task" id="focusTask">Task name here</div>
+        <div class="focus-controls">
+            <button class="focus-btn secondary">Pause</button>
+            <button class="focus-btn primary">Complete</button>
+        </div>
+        <div class="focus-progress" id="focusProgress" style="width: 0%"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Google API for Calendar -->
+    <script src="https://apis.google.com/js/api.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/firebase.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/priorities.js"></script>
+    <script src="js/focus.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

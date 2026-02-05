@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Minimal + Quirky Variations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .theme-selector {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #111;
+            padding: 16px 24px;
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            flex-wrap: wrap;
+        }
+
+        .theme-selector h1 {
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 20px;
+        }
+
+        .theme-btn {
+            padding: 10px 20px;
+            border: 2px solid #444;
+            background: transparent;
+            color: #888;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .theme-btn:hover {
+            border-color: #666;
+            color: #fff;
+        }
+
+        .theme-btn.active {
+            border-color: #0066ff;
+            background: #0066ff;
+            color: white;
+        }
+
+        .dashboard-container {
+            margin-top: 80px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard {
+            display: none;
+            width: 100%;
+            max-width: 1400px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        /* ============================================
+           VARIATION A: MINIMAL + SUBTLE WARMTH
+           Adds: warmer whites, softer shadows,
+           slightly rounded elements, gentle accents
+           ============================================ */
+        .theme-a {
+            background: #fffdf9;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+        }
+
+        .theme-a .priorities-strip {
+            background: linear-gradient(180deg, #faf8f5 0%, #fff 100%);
+            border-bottom: 1px solid #f0ebe4;
+            padding: 16px 24px;
+        }
+
+        .theme-a .priorities-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .theme-a .priorities-row:last-child { margin-bottom: 0; }
+
+        .theme-a .priorities-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #a0927d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 70px;
+        }
+
+        .theme-a .priority-chip {
+            padding: 6px 14px;
+            background: white;
+            border: 1px solid #e8e2da;
+            border-radius: 24px;
+            font-size: 13px;
+            color: #4a4139;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .theme-a .priority-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .theme-a .priority-num {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .theme-a .priority-num.work { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+        .theme-a .priority-num.personal { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
+
+        .theme-a .main-layout { display: flex; }
+
+        .theme-a .sidebar {
+            width: 220px;
+            background: #faf8f5;
+            border-right: 1px solid #f0ebe4;
+            padding: 20px 0;
+        }
+
+        .theme-a .sidebar-item {
+            padding: 12px 24px;
+            font-size: 14px;
+            color: #7a7067;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 0 24px 24px 0;
+            margin-right: 12px;
+        }
+
+        .theme-a .sidebar-item:hover { background: #f5f0ea; }
+
+        .theme-a .sidebar-item.active {
+            background: linear-gradient(90deg, #f0ebff 0%, #faf8f5 100%);
+            color: #6366f1;
+        }
+
+        .theme-a .sidebar-icon { font-size: 18px; }
+
+        .theme-a .main-content {
+            flex: 1;
+            padding: 24px 32px;
+        }
+
+        .theme-a .greeting {
+            background: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);
+            border-radius: 20px;
+            padding: 22px 26px;
+            color: white;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-a .greeting::before {
+            content: '☀️';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 48px;
+            opacity: 0.3;
+        }
+
+        .theme-a .greeting h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .theme-a .greeting p {
+            font-size: 14px;
+            opacity: 0.95;
+            line-height: 1.5;
+            max-width: 80%;
+        }
+
+        .theme-a .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 300px;
+            gap: 28px;
+        }
+
+        .theme-a .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .theme-a .section-header h3 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #a0927d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .theme-a .section-header a {
+            font-size: 13px;
+            color: #6366f1;
+            text-decoration: none;
+        }
+
+        .theme-a .task-list {
+            background: white;
+            border: 1px solid #f0ebe4;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .theme-a .task-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid #faf5f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+
+        .theme-a .task-item:last-child { border-bottom: none; }
+        .theme-a .task-item:hover { background: #fffdf9; }
+
+        .theme-a .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d4cdc4;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .theme-a .task-checkbox:hover {
+            border-color: #6366f1;
+        }
+
+        .theme-a .task-title {
+            flex: 1;
+            font-size: 14px;
+            color: #4a4139;
+        }
+
+        .theme-a .task-tag {
+            font-size: 11px;
+            padding: 3px 10px;
+            background: linear-gradient(135deg, #f0ebff 0%, #faf5ff 100%);
+            color: #6366f1;
+            border-radius: 12px;
+        }
+
+        .theme-a .task-recurring {
+            font-size: 11px;
+            color: #10b981;
+        }
+
+        .theme-a .add-task {
+            padding: 12px;
+            text-align: center;
+            color: #a0927d;
+            font-size: 13px;
+            border: 1px dashed #e0d9d0;
+            border-radius: 12px;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-a .add-task:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+            background: #faf8ff;
+        }
+
+        .theme-a .calendar {
+            background: white;
+            border: 1px solid #f0ebe4;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .theme-a .calendar-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .theme-a .calendar-header h4 { font-size: 14px; font-weight: 500; }
+        .theme-a .calendar-header span { font-size: 12px; opacity: 0.9; }
+
+        .theme-a .calendar-event {
+            padding: 12px 16px;
+            border-bottom: 1px solid #faf5f0;
+            display: flex;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+
+        .theme-a .calendar-event:hover { background: #fffdf9; }
+
+        .theme-a .event-color { width: 4px; border-radius: 2px; }
+        .theme-a .event-time { font-size: 12px; color: #7a7067; min-width: 50px; }
+        .theme-a .event-title { font-size: 13px; color: #4a4139; }
+        .theme-a .event-location { font-size: 11px; color: #a0927d; }
+
+        /* ============================================
+           VARIATION B: MINIMAL + PLAYFUL POPS
+           Adds: colorful accents, fun hover states,
+           slightly bouncy interactions, emoji touches
+           ============================================ */
+        .theme-b {
+            background: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+        }
+
+        .theme-b .priorities-strip {
+            background: #fafafa;
+            border-bottom: 1px solid #eee;
+            padding: 16px 24px;
+        }
+
+        .theme-b .priorities-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .theme-b .priorities-row:last-child { margin-bottom: 0; }
+
+        .theme-b .priorities-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 70px;
+        }
+
+        .theme-b .priority-chip {
+            padding: 6px 14px;
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        .theme-b .priority-chip:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border-color: #ddd;
+        }
+
+        .theme-b .priority-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .theme-b .priority-num.work { background: #3b82f6; }
+        .theme-b .priority-num.personal { background: #22c55e; }
+
+        .theme-b .main-layout { display: flex; }
+
+        .theme-b .sidebar {
+            width: 220px;
+            background: #fafafa;
+            border-right: 1px solid #eee;
+            padding: 20px 0;
+        }
+
+        .theme-b .sidebar-item {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .theme-b .sidebar-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 0;
+            background: #3b82f6;
+            border-radius: 0 4px 4px 0;
+            transition: height 0.2s;
+        }
+
+        .theme-b .sidebar-item:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .theme-b .sidebar-item:hover::before { height: 20px; }
+
+        .theme-b .sidebar-item.active {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .theme-b .sidebar-item.active::before { height: 28px; }
+
+        .theme-b .sidebar-icon { font-size: 18px; }
+
+        .theme-b .main-content {
+            flex: 1;
+            padding: 24px 32px;
+        }
+
+        .theme-b .greeting {
+            background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+            border-radius: 16px;
+            padding: 22px 26px;
+            color: white;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-b .greeting::after {
+            content: '✨';
+            position: absolute;
+            right: 60px;
+            top: 10px;
+            font-size: 24px;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.7; transform: scale(1.2) rotate(10deg); }
+        }
+
+        .theme-b .greeting h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .theme-b .greeting p {
+            font-size: 14px;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        .theme-b .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 300px;
+            gap: 28px;
+        }
+
+        .theme-b .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .theme-b .section-header h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-b .section-header h3::before {
+            content: '💼';
+            font-size: 14px;
+        }
+
+        .theme-b .section-header.personal h3::before {
+            content: '🏠';
+        }
+
+        .theme-b .section-header a {
+            font-size: 13px;
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .theme-b .task-list {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .theme-b .task-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .theme-b .task-item:last-child { border-bottom: none; }
+
+        .theme-b .task-item:hover {
+            background: #fafafa;
+            padding-left: 20px;
+        }
+
+        .theme-b .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #d0d0d0;
+            border-radius: 8px;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        .theme-b .task-checkbox:hover {
+            border-color: #3b82f6;
+            transform: scale(1.1);
+        }
+
+        .theme-b .task-title {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .theme-b .task-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            background: #eff6ff;
+            color: #3b82f6;
+            border-radius: 8px;
+        }
+
+        .theme-b .task-recurring {
+            font-size: 11px;
+            font-weight: 600;
+            color: #22c55e;
+        }
+
+        .theme-b .add-task {
+            padding: 14px;
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            font-weight: 500;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-b .add-task:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: #f8faff;
+            transform: scale(1.01);
+        }
+
+        .theme-b .calendar {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .theme-b .calendar-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            color: white;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-b .calendar-header h4 {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-b .calendar-header h4::before { content: '📅'; }
+        .theme-b .calendar-header span { font-size: 12px; opacity: 0.9; }
+
+        .theme-b .calendar-event {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .theme-b .calendar-event:hover {
+            background: #fafafa;
+            padding-left: 20px;
+        }
+
+        .theme-b .event-color { width: 4px; border-radius: 4px; }
+        .theme-b .event-time { font-size: 12px; font-weight: 500; color: #666; min-width: 50px; }
+        .theme-b .event-title { font-size: 13px; font-weight: 500; color: #333; }
+        .theme-b .event-location { font-size: 11px; color: #888; }
+
+        /* ============================================
+           VARIATION C: MINIMAL + GEOMETRIC ACCENTS
+           Adds: subtle geometric shapes, layered cards,
+           interesting borders, refined typography
+           ============================================ */
+        .theme-c {
+            background: #f8f9fa;
+            font-family: 'Sora', sans-serif;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+        }
+
+        .theme-c .priorities-strip {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 24px;
+            position: relative;
+        }
+
+        .theme-c .priorities-strip::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1 0%, #ec4899 50%, #f97316 100%);
+        }
+
+        .theme-c .priorities-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .theme-c .priorities-row:last-child { margin-bottom: 0; }
+
+        .theme-c .priorities-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #868e96;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            min-width: 70px;
+        }
+
+        .theme-c .priority-chip {
+            padding: 6px 14px 6px 8px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #495057;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .theme-c .priority-chip:hover {
+            border-color: #adb5bd;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .theme-c .priority-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .theme-c .priority-num.work { background: #6366f1; }
+        .theme-c .priority-num.personal { background: #10b981; }
+
+        .theme-c .main-layout { display: flex; }
+
+        .theme-c .sidebar {
+            width: 64px;
+            background: #212529;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-c .sidebar-item {
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+            color: #868e96;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 12px;
+        }
+
+        .theme-c .sidebar-item:hover {
+            background: #343a40;
+            color: white;
+        }
+
+        .theme-c .sidebar-item.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        .theme-c .sidebar-icon { font-size: 20px; }
+        .theme-c .sidebar-item span:not(.sidebar-icon) { display: none; }
+
+        .theme-c .main-content {
+            flex: 1;
+            padding: 24px 32px;
+        }
+
+        .theme-c .greeting {
+            background: white;
+            border-radius: 16px;
+            padding: 22px 26px;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+
+        .theme-c .greeting::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #6366f1 0%, #ec4899 100%);
+        }
+
+        .theme-c .greeting::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            opacity: 0.1;
+            border-radius: 50%;
+        }
+
+        .theme-c .greeting h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+
+        .theme-c .greeting p {
+            font-size: 14px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .theme-c .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 300px;
+            gap: 24px;
+        }
+
+        .theme-c .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .theme-c .section-header h3 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .theme-c .section-header a {
+            font-size: 12px;
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .theme-c .task-list {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .theme-c .task-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .theme-c .task-item:last-child { border-bottom: none; }
+
+        .theme-c .task-item:hover {
+            background: #f8f9fa;
+            border-left-color: #6366f1;
+        }
+
+        .theme-c .task-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ced4da;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .theme-c .task-checkbox:hover {
+            border-color: #6366f1;
+        }
+
+        .theme-c .task-title {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #343a40;
+        }
+
+        .theme-c .task-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            background: #6366f1;
+            color: white;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .theme-c .task-recurring {
+            font-size: 11px;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .theme-c .add-task {
+            padding: 12px;
+            text-align: center;
+            color: #868e96;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px dashed #ced4da;
+            border-radius: 8px;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-c .add-task:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .theme-c .calendar {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .theme-c .calendar-header {
+            background: #212529;
+            color: white;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .theme-c .calendar-header h4 { font-size: 13px; font-weight: 600; letter-spacing: 0.5px; }
+        .theme-c .calendar-header span { font-size: 12px; color: #adb5bd; }
+
+        .theme-c .calendar-event {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            gap: 12px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .theme-c .calendar-event:hover {
+            background: #f8f9fa;
+            border-left-color: #6366f1;
+        }
+
+        .theme-c .event-color { width: 4px; border-radius: 2px; }
+        .theme-c .event-time { font-size: 12px; font-weight: 600; color: #495057; min-width: 50px; }
+        .theme-c .event-title { font-size: 13px; font-weight: 500; color: #343a40; }
+        .theme-c .event-location { font-size: 11px; color: #868e96; }
+
+        /* ============================================
+           VARIATION D: MINIMAL + HANDCRAFTED FEEL
+           Adds: softer corners, paper-like texture,
+           hand-drawn style borders, warm personality
+           ============================================ */
+        .theme-d {
+            background: #fefefe;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.06);
+            border: 1px solid #e8e8e8;
+        }
+
+        .theme-d .priorities-strip {
+            background: repeating-linear-gradient(
+                0deg,
+                #fff,
+                #fff 27px,
+                #f0f0f0 28px
+            );
+            border-bottom: 2px solid #333;
+            padding: 18px 24px;
+        }
+
+        .theme-d .priorities-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .theme-d .priorities-row:last-child { margin-bottom: 0; }
+
+        .theme-d .priorities-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            min-width: 70px;
+        }
+
+        .theme-d .priority-chip {
+            padding: 8px 16px;
+            background: #fffef0;
+            border: 2px solid #333;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            box-shadow: 2px 2px 0 #333;
+        }
+
+        .theme-d .priority-chip:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 #333;
+        }
+
+        .theme-d .priority-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: #333;
+        }
+
+        .theme-d .priority-num.work { background: #a8e6cf; }
+        .theme-d .priority-num.personal { background: #ffd3b6; }
+
+        .theme-d .main-layout { display: flex; }
+
+        .theme-d .sidebar {
+            width: 200px;
+            background: #fffef0;
+            border-right: 2px solid #333;
+            padding: 20px 0;
+        }
+
+        .theme-d .sidebar-item {
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 4px 12px;
+            border-radius: 8px;
+        }
+
+        .theme-d .sidebar-item:hover {
+            background: #fff;
+            color: #333;
+        }
+
+        .theme-d .sidebar-item.active {
+            background: #a8e6cf;
+            color: #333;
+            border: 2px solid #333;
+        }
+
+        .theme-d .sidebar-icon { font-size: 18px; }
+
+        .theme-d .main-content {
+            flex: 1;
+            padding: 24px 32px;
+            background: #fefefe;
+        }
+
+        .theme-d .greeting {
+            background: #ffb7b2;
+            border: 2px solid #333;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            box-shadow: 4px 4px 0 #333;
+            position: relative;
+        }
+
+        .theme-d .greeting::before {
+            content: '"';
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 60px;
+            font-family: Georgia, serif;
+            opacity: 0.2;
+            line-height: 1;
+        }
+
+        .theme-d .greeting h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .theme-d .greeting p {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        .theme-d .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 300px;
+            gap: 28px;
+        }
+
+        .theme-d .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .theme-d .section-header h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #333;
+            display: inline-block;
+        }
+
+        .theme-d .section-header a {
+            font-size: 13px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px dashed #333;
+        }
+
+        .theme-d .task-list {
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 3px 3px 0 #333;
+        }
+
+        .theme-d .task-item {
+            padding: 14px 16px;
+            border-bottom: 1px dashed #ccc;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .theme-d .task-item:last-child { border-bottom: none; }
+        .theme-d .task-item:hover { background: #fffef0; }
+
+        .theme-d .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            background: #fff;
+        }
+
+        .theme-d .task-title {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .theme-d .task-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            background: #a8e6cf;
+            color: #333;
+            border-radius: 20px;
+            border: 1px solid #333;
+        }
+
+        .theme-d .task-recurring {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff6b6b;
+        }
+
+        .theme-d .add-task {
+            padding: 12px;
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            font-weight: 600;
+            border: 2px dashed #999;
+            border-radius: 10px;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-d .add-task:hover {
+            border-color: #333;
+            color: #333;
+            background: #fffef0;
+        }
+
+        .theme-d .calendar {
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 3px 3px 0 #333;
+        }
+
+        .theme-d .calendar-header {
+            background: #a8e6cf;
+            color: #333;
+            padding: 14px 18px;
+            border-bottom: 2px solid #333;
+        }
+
+        .theme-d .calendar-header h4 { font-size: 14px; font-weight: 700; }
+        .theme-d .calendar-header span { font-size: 12px; }
+
+        .theme-d .calendar-event {
+            padding: 12px 16px;
+            border-bottom: 1px dashed #ccc;
+            display: flex;
+            gap: 12px;
+        }
+
+        .theme-d .calendar-event:hover { background: #fffef0; }
+
+        .theme-d .event-color { width: 6px; border-radius: 3px; border: 1px solid #333; }
+        .theme-d .event-time { font-size: 12px; font-weight: 700; color: #555; min-width: 50px; }
+        .theme-d .event-title { font-size: 13px; font-weight: 600; color: #333; }
+        .theme-d .event-location { font-size: 11px; color: #777; }
+
+        /* Color utilities */
+        .blue { background: #6366f1; }
+        .green { background: #10b981; }
+        .purple { background: #a855f7; }
+        .orange { background: #f97316; }
+    </style>
+</head>
+<body>
+    <div class="theme-selector">
+        <h1>Clean Minimal + Quirky</h1>
+        <button class="theme-btn active" onclick="showTheme('a')">A. Subtle Warmth</button>
+        <button class="theme-btn" onclick="showTheme('b')">B. Playful Pops</button>
+        <button class="theme-btn" onclick="showTheme('c')">C. Geometric Accents</button>
+        <button class="theme-btn" onclick="showTheme('d')">D. Handcrafted Feel</button>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Variation A -->
+        <div class="dashboard theme-a active" id="theme-a">
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Work</span>
+                    <div class="priority-chip"><span class="priority-num work">1</span> Q1 Launch</div>
+                    <div class="priority-chip"><span class="priority-num work">2</span> Hiring</div>
+                    <div class="priority-chip"><span class="priority-num work">3</span> Migration</div>
+                </div>
+                <div class="priorities-row">
+                    <span class="priorities-label">Personal</span>
+                    <div class="priority-chip"><span class="priority-num personal">1</span> Health</div>
+                    <div class="priority-chip"><span class="priority-num personal">2</span> Spanish</div>
+                    <div class="priority-chip"><span class="priority-num personal">3</span> Home Reno</div>
+                </div>
+            </div>
+            <div class="main-layout">
+                <div class="sidebar">
+                    <div class="sidebar-item active"><span class="sidebar-icon">📊</span> Dashboard</div>
+                    <div class="sidebar-item"><span class="sidebar-icon">💼</span> Work</div>
+                    <div class="sidebar-item"><span class="sidebar-icon">🏠</span> Personal</div>
+                </div>
+                <div class="main-content">
+                    <div class="greeting">
+                        <h2>Good morning, Danny!</h2>
+                        <p>Why do programmers prefer dark mode? Because light attracts bugs.</p>
+                    </div>
+                    <div class="three-col">
+                        <div>
+                            <div class="section-header"><h3>Work — Today</h3><a href="#">All</a></div>
+                            <div class="task-list">
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Daily standup</span><span class="task-recurring">↻</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Review PRs for launch</span><span class="task-tag">Q1</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Prep all-hands slides</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Interview candidate</span><span class="task-tag">Hiring</span></div>
+                            </div>
+                            <div class="add-task">+ Add work task</div>
+                        </div>
+                        <div>
+                            <div class="section-header"><h3>Personal — Today</h3><a href="#">All</a></div>
+                            <div class="task-list">
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Spanish practice</span><span class="task-recurring">↻ 45d</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Workout</span><span class="task-recurring">↻</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Grocery shopping</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Call contractor</span><span class="task-tag">Home</span></div>
+                            </div>
+                            <div class="add-task">+ Add personal task</div>
+                        </div>
+                        <div>
+                            <div class="calendar">
+                                <div class="calendar-header"><h4>Calendar</h4><span>Wed, Feb 5</span></div>
+                                <div class="calendar-event"><div class="event-color blue"></div><span class="event-time">9:00</span><div><div class="event-title">Team Standup</div><div class="event-location">Zoom</div></div></div>
+                                <div class="calendar-event"><div class="event-color green"></div><span class="event-time">11:00</span><div><div class="event-title">1:1 with Sarah</div><div class="event-location">Room B</div></div></div>
+                                <div class="calendar-event"><div class="event-color purple"></div><span class="event-time">2:00</span><div><div class="event-title">All-Hands</div><div class="event-location">Main Hall</div></div></div>
+                                <div class="calendar-event"><div class="event-color orange"></div><span class="event-time">5:30</span><div><div class="event-title">Gym</div><div class="event-location">Equinox</div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variation B -->
+        <div class="dashboard theme-b" id="theme-b">
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Work</span>
+                    <div class="priority-chip"><span class="priority-num work">1</span> Q1 Launch</div>
+                    <div class="priority-chip"><span class="priority-num work">2</span> Hiring</div>
+                    <div class="priority-chip"><span class="priority-num work">3</span> Migration</div>
+                </div>
+                <div class="priorities-row">
+                    <span class="priorities-label">Personal</span>
+                    <div class="priority-chip"><span class="priority-num personal">1</span> Health</div>
+                    <div class="priority-chip"><span class="priority-num personal">2</span> Spanish</div>
+                    <div class="priority-chip"><span class="priority-num personal">3</span> Home Reno</div>
+                </div>
+            </div>
+            <div class="main-layout">
+                <div class="sidebar">
+                    <div class="sidebar-item active"><span class="sidebar-icon">📊</span> Dashboard</div>
+                    <div class="sidebar-item"><span class="sidebar-icon">💼</span> Work</div>
+                    <div class="sidebar-item"><span class="sidebar-icon">🏠</span> Personal</div>
+                </div>
+                <div class="main-content">
+                    <div class="greeting">
+                        <h2>Good morning, Danny!</h2>
+                        <p>Why do programmers prefer dark mode? Because light attracts bugs.</p>
+                    </div>
+                    <div class="three-col">
+                        <div>
+                            <div class="section-header"><h3>Work — Today</h3><a href="#">All</a></div>
+                            <div class="task-list">
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Daily standup</span><span class="task-recurring">↻</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Review PRs for launch</span><span class="task-tag">Q1</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Prep all-hands slides</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Interview candidate</span><span class="task-tag">Hiring</span></div>
+                            </div>
+                            <div class="add-task">+ Add work task</div>
+                        </div>
+                        <div>
+                            <div class="section-header personal"><h3>Personal — Today</h3><a href="#">All</a></div>
+                            <div class="task-list">
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Spanish practice</span><span class="task-recurring">↻ 45d</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Workout</span><span class="task-recurring">↻</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Grocery shopping</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Call contractor</span><span class="task-tag">Home</span></div>
+                            </div>
+                            <div class="add-task">+ Add personal task</div>
+                        </div>
+                        <div>
+                            <div class="calendar">
+                                <div class="calendar-header"><h4>Calendar</h4><span>Wed, Feb 5</span></div>
+                                <div class="calendar-event"><div class="event-color blue"></div><span class="event-time">9:00</span><div><div class="event-title">Team Standup</div><div class="event-location">Zoom</div></div></div>
+                                <div class="calendar-event"><div class="event-color green"></div><span class="event-time">11:00</span><div><div class="event-title">1:1 with Sarah</div><div class="event-location">Room B</div></div></div>
+                                <div class="calendar-event"><div class="event-color purple"></div><span class="event-time">2:00</span><div><div class="event-title">All-Hands</div><div class="event-location">Main Hall</div></div></div>
+                                <div class="calendar-event"><div class="event-color orange"></div><span class="event-time">5:30</span><div><div class="event-title">Gym</div><div class="event-location">Equinox</div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variation C -->
+        <div class="dashboard theme-c" id="theme-c">
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Work</span>
+                    <div class="priority-chip"><span class="priority-num work">1</span> Q1 Launch</div>
+                    <div class="priority-chip"><span class="priority-num work">2</span> Hiring</div>
+                    <div class="priority-chip"><span class="priority-num work">3</span> Migration</div>
+                </div>
+                <div class="priorities-row">
+                    <span class="priorities-label">Personal</span>
+                    <div class="priority-chip"><span class="priority-num personal">1</span> Health</div>
+                    <div class="priority-chip"><span class="priority-num personal">2</span> Spanish</div>
+                    <div class="priority-chip"><span class="priority-num personal">3</span> Home Reno</div>
+                </div>
+            </div>
+            <div class="main-layout">
+                <div class="sidebar">
+                    <div class="sidebar-item active"><span class="sidebar-icon">📊</span></div>
+                    <div class="sidebar-item"><span class="sidebar-icon">💼</span></div>
+                    <div class="sidebar-item"><span class="sidebar-icon">🏠</span></div>
+                </div>
+                <div class="main-content">
+                    <div class="greeting">
+                        <h2>Good morning, Danny!</h2>
+                        <p>Why do programmers prefer dark mode? Because light attracts bugs.</p>
+                    </div>
+                    <div class="three-col">
+                        <div>
+                            <div class="section-header"><h3>Work — Today</h3><a href="#">All</a></div>
+                            <div class="task-list">
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Daily standup</span><span class="task-recurring">↻</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Review PRs for launch</span><span class="task-tag">Q1</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Prep all-hands slides</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Interview candidate</span><span class="task-tag">Hiring</span></div>
+                            </div>
+                            <div class="add-task">+ Add work task</div>
+                        </div>
+                        <div>
+                            <div class="section-header"><h3>Personal — Today</h3><a href="#">All</a></div>
+                            <div class="task-list">
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Spanish practice</span><span class="task-recurring">↻ 45d</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Workout</span><span class="task-recurring">↻</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Grocery shopping</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Call contractor</span><span class="task-tag">Home</span></div>
+                            </div>
+                            <div class="add-task">+ Add personal task</div>
+                        </div>
+                        <div>
+                            <div class="calendar">
+                                <div class="calendar-header"><h4>Calendar</h4><span>Wed, Feb 5</span></div>
+                                <div class="calendar-event"><div class="event-color blue"></div><span class="event-time">9:00</span><div><div class="event-title">Team Standup</div><div class="event-location">Zoom</div></div></div>
+                                <div class="calendar-event"><div class="event-color green"></div><span class="event-time">11:00</span><div><div class="event-title">1:1 with Sarah</div><div class="event-location">Room B</div></div></div>
+                                <div class="calendar-event"><div class="event-color purple"></div><span class="event-time">2:00</span><div><div class="event-title">All-Hands</div><div class="event-location">Main Hall</div></div></div>
+                                <div class="calendar-event"><div class="event-color orange"></div><span class="event-time">5:30</span><div><div class="event-title">Gym</div><div class="event-location">Equinox</div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variation D -->
+        <div class="dashboard theme-d" id="theme-d">
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Work</span>
+                    <div class="priority-chip"><span class="priority-num work">1</span> Q1 Launch</div>
+                    <div class="priority-chip"><span class="priority-num work">2</span> Hiring</div>
+                    <div class="priority-chip"><span class="priority-num work">3</span> Migration</div>
+                </div>
+                <div class="priorities-row">
+                    <span class="priorities-label">Personal</span>
+                    <div class="priority-chip"><span class="priority-num personal">1</span> Health</div>
+                    <div class="priority-chip"><span class="priority-num personal">2</span> Spanish</div>
+                    <div class="priority-chip"><span class="priority-num personal">3</span> Home Reno</div>
+                </div>
+            </div>
+            <div class="main-layout">
+                <div class="sidebar">
+                    <div class="sidebar-item active"><span class="sidebar-icon">📊</span> Dashboard</div>
+                    <div class="sidebar-item"><span class="sidebar-icon">💼</span> Work</div>
+                    <div class="sidebar-item"><span class="sidebar-icon">🏠</span> Personal</div>
+                </div>
+                <div class="main-content">
+                    <div class="greeting">
+                        <h2>Good morning, Danny!</h2>
+                        <p>Why do programmers prefer dark mode? Because light attracts bugs.</p>
+                    </div>
+                    <div class="three-col">
+                        <div>
+                            <div class="section-header"><h3>Work — Today</h3><a href="#">All</a></div>
+                            <div class="task-list">
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Daily standup</span><span class="task-recurring">↻</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Review PRs for launch</span><span class="task-tag">Q1</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Prep all-hands slides</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Interview candidate</span><span class="task-tag">Hiring</span></div>
+                            </div>
+                            <div class="add-task">+ Add work task</div>
+                        </div>
+                        <div>
+                            <div class="section-header"><h3>Personal — Today</h3><a href="#">All</a></div>
+                            <div class="task-list">
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Spanish practice</span><span class="task-recurring">↻ 45d</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Workout</span><span class="task-recurring">↻</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Grocery shopping</span></div>
+                                <div class="task-item"><div class="task-checkbox"></div><span class="task-title">Call contractor</span><span class="task-tag">Home</span></div>
+                            </div>
+                            <div class="add-task">+ Add personal task</div>
+                        </div>
+                        <div>
+                            <div class="calendar">
+                                <div class="calendar-header"><h4>Calendar</h4><span>Wed, Feb 5</span></div>
+                                <div class="calendar-event"><div class="event-color blue"></div><span class="event-time">9:00</span><div><div class="event-title">Team Standup</div><div class="event-location">Zoom</div></div></div>
+                                <div class="calendar-event"><div class="event-color green"></div><span class="event-time">11:00</span><div><div class="event-title">1:1 with Sarah</div><div class="event-location">Room B</div></div></div>
+                                <div class="calendar-event"><div class="event-color purple"></div><span class="event-time">2:00</span><div><div class="event-title">All-Hands</div><div class="event-location">Main Hall</div></div></div>
+                                <div class="calendar-event"><div class="event-color orange"></div><span class="event-time">5:30</span><div><div class="event-title">Gym</div><div class="event-location">Equinox</div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTheme(theme) {
+            document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('theme-' + theme).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

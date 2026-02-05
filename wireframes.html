@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Tracker - Wireframes v5</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        /* Wireframe Navigation */
+        .wireframe-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .wireframe-nav span {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-right: 8px;
+        }
+
+        .wireframe-nav button {
+            background: #555;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .wireframe-nav button:hover {
+            background: #666;
+        }
+
+        .wireframe-nav button.active {
+            background: #0066cc;
+        }
+
+        .device-toggle {
+            margin-left: auto;
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Screen Container */
+        .screen-container {
+            padding-top: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .screen {
+            display: none;
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* RESPONSIVE DESKTOP - scales to fit */
+        .screen.desktop {
+            width: 95vw;
+            max-width: 1600px;
+            min-width: 900px;
+            min-height: 85vh;
+        }
+
+        .screen.mobile {
+            width: 375px;
+            min-height: 700px;
+        }
+
+        /* PRIORITIES STRIP */
+        .priorities-strip {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid #dee2e6;
+            padding: 12px 20px;
+        }
+
+        .priorities-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .priorities-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .priorities-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #868e96;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 75px;
+        }
+
+        .priorities-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .priority-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 16px;
+            font-size: 13px;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .priority-chip:hover {
+            border-color: #0066cc;
+            background: #f0f7ff;
+        }
+
+        .priority-chip .priority-num {
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .priority-chip .priority-num.work { background: #0066cc; }
+        .priority-chip .priority-num.personal { background: #28a745; }
+
+        .priority-chip.add-new {
+            border-style: dashed;
+            color: #868e96;
+            padding: 5px 10px;
+        }
+
+        /* COLLAPSIBLE SIDEBAR */
+        .desktop-layout {
+            display: flex;
+            min-height: calc(85vh - 100px);
+        }
+
+        .wf-sidebar {
+            width: 200px;
+            background: #f8f8f8;
+            border-right: 1px solid #e0e0e0;
+            padding: 16px 0;
+            flex-shrink: 0;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+
+        .wf-sidebar.collapsed {
+            width: 56px;
+        }
+
+        .sidebar-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 12px 12px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .sidebar-toggle-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .sidebar-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .wf-sidebar.collapsed .sidebar-item {
+            padding: 10px 16px;
+            justify-content: center;
+        }
+
+        .wf-sidebar.collapsed .sidebar-item span {
+            display: none;
+        }
+
+        .sidebar-item:hover {
+            background: #eee;
+        }
+
+        .sidebar-item.active {
+            background: #e8f0fe;
+            color: #0066cc;
+            border-right: 3px solid #0066cc;
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 4px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .sidebar-item.active .sidebar-icon {
+            background: #0066cc;
+        }
+
+        .sidebar-section {
+            margin-top: 20px;
+            padding: 0 16px;
+            margin-bottom: 8px;
+        }
+
+        .wf-sidebar.collapsed .sidebar-section {
+            display: none;
+        }
+
+        .sidebar-section-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .desktop-main {
+            flex: 1;
+            padding: 20px 24px;
+            overflow-y: auto;
+            min-width: 0;
+        }
+
+        /* Section styles */
+        .wf-section {
+            margin-bottom: 24px;
+        }
+
+        .wf-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .wf-section h2 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .wf-link {
+            font-size: 13px;
+            color: #0066cc;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .wf-link:hover {
+            text-decoration: underline;
+        }
+
+        /* RESPONSIVE Three Column Layout */
+        .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr minmax(280px, 320px);
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* Task List */
+        .task-list {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+            gap: 10px;
+            position: relative;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-item:hover {
+            background: #f8f8f8;
+        }
+
+        .task-item:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .task-checkbox:hover {
+            border-color: #0066cc;
+            transform: scale(1.1);
+        }
+
+        .task-checkbox.checked {
+            background: #0066cc;
+            border-color: #0066cc;
+        }
+
+        .task-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-title {
+            font-size: 14px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .task-meta {
+            font-size: 12px;
+            color: #888;
+            flex-shrink: 0;
+        }
+
+        .task-priority-tag {
+            font-size: 10px;
+            background: #e8f0fe;
+            color: #0066cc;
+            padding: 2px 6px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .task-recurring {
+            font-size: 10px;
+            color: #28a745;
+        }
+
+        /* Task Actions */
+        .task-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+        }
+
+        .task-action-btn {
+            width: 26px;
+            height: 26px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .task-action-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .task-action-btn.focus-btn:hover {
+            background: #e8f0fe;
+            border-color: #0066cc;
+        }
+
+        /* Add Task Button */
+        .add-task-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-task-btn:hover {
+            border-color: #0066cc;
+            color: #0066cc;
+            background: #f8faff;
+        }
+
+        /* Calendar Section */
+        .calendar-section {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            background: #4285f4;
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-header h3 {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .calendar-date {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .calendar-events {
+            padding: 8px;
+        }
+
+        .calendar-event {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px 12px;
+            border-radius: 6px;
+            gap: 10px;
+            transition: background 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .calendar-event:hover {
+            background: #f0f0f0;
+        }
+
+        .event-time {
+            font-size: 12px;
+            color: #666;
+            min-width: 55px;
+            font-weight: 500;
+        }
+
+        .event-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .event-title {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .event-location {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .event-color {
+            width: 4px;
+            min-height: 32px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .event-color.blue { background: #4285f4; }
+        .event-color.green { background: #34a853; }
+        .event-color.purple { background: #9c27b0; }
+        .event-color.orange { background: #fb8c00; }
+
+        /* Morning Joke */
+        .morning-greeting {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .greeting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .greeting-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .greeting-close {
+            font-size: 18px;
+            cursor: pointer;
+            opacity: 0.7;
+            line-height: 1;
+        }
+
+        .greeting-close:hover {
+            opacity: 1;
+        }
+
+        .joke-text {
+            font-size: 14px;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+
+        .joke-punchline {
+            margin-top: 8px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        /* ===== CELEBRATION STYLES ===== */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Champagne */
+        .champagne-container {
+            position: fixed;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 80px;
+            animation: champagne-pop 1s ease-out forwards;
+        }
+
+        @keyframes champagne-pop {
+            0% { transform: translateX(-50%) scale(0.5) rotate(-10deg); opacity: 0; }
+            30% { transform: translateX(-50%) scale(1.2) rotate(5deg); opacity: 1; }
+            50% { transform: translateX(-50%) scale(1) rotate(-3deg); }
+            100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 0; }
+        }
+
+        .champagne-bubbles {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .bubble {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: gold;
+            border-radius: 50%;
+            animation: bubble-rise 1.5s ease-out forwards;
+        }
+
+        @keyframes bubble-rise {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-200px) scale(0.3); opacity: 0; }
+        }
+
+        /* Cat GIF style */
+        .cat-celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: cat-pop 0.5s ease-out forwards;
+            z-index: 10001;
+        }
+
+        @keyframes cat-pop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .cat-celebration img {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .cat-celebration .cat-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Fireworks */
+        .firework {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: firework-explode 1.5s ease-out forwards;
+        }
+
+        @keyframes firework-explode {
+            0% { transform: scale(0); opacity: 1; }
+            50% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* Emoji burst */
+        .emoji-burst {
+            position: absolute;
+            font-size: 40px;
+            animation: emoji-fly 2s ease-out forwards;
+        }
+
+        @keyframes emoji-fly {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+            100% { transform: scale(0.5) rotate(360deg) translateY(-100px); opacity: 0; }
+        }
+
+        /* Star burst */
+        .star {
+            position: absolute;
+            font-size: 24px;
+            animation: star-burst 1.5s ease-out forwards;
+        }
+
+        @keyframes star-burst {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1) rotate(360deg); opacity: 0; }
+        }
+
+        /* Rainbow wave */
+        .rainbow-wave {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(255,0,0,0.3) 20%,
+                rgba(255,165,0,0.3) 40%,
+                rgba(255,255,0,0.3) 60%,
+                rgba(0,128,0,0.3) 80%,
+                rgba(0,0,255,0.3) 100%
+            );
+            animation: rainbow-rise 2s ease-out forwards;
+        }
+
+        @keyframes rainbow-rise {
+            0% { transform: translateY(100%); opacity: 0; }
+            30% { opacity: 1; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .task-complete-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
+            z-index: 10000;
+            animation: toast-pop 0.3s ease-out;
+        }
+
+        @keyframes toast-pop {
+            0% { transform: translateX(-50%) scale(0.8) translateY(20px); opacity: 0; }
+            100% { transform: translateX(-50%) scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* Quick actions demo */
+        .demo-section {
+            margin-top: 12px;
+            padding: 12px;
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            border-radius: 8px;
+        }
+
+        .demo-section-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: #ad8b00;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .demo-dropdown {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-item:hover {
+            background: #f5f5f5;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #eee;
+            margin: 3px 0;
+        }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .filter-chip.active {
+            background: #e8f0fe;
+            color: #0066cc;
+        }
+
+        .sort-dropdown {
+            margin-left: auto;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            background: white;
+        }
+
+        /* Screen title */
+        .screen-title {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        /* Modal */
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 440px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+
+        .modal-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 26px;
+            height: 26px;
+            background: #eee;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body { padding: 18px; }
+
+        .modal-footer {
+            padding: 14px 18px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .input-group { margin-bottom: 14px; }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fafafa;
+        }
+
+        .chip-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover, .chip.selected {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary { background: #eee; color: #333; }
+        .btn-primary { background: #0066cc; color: white; }
+
+        /* Toggle */
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .toggle-label { font-size: 14px; color: #333; }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-switch.on { background: #0066cc; }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+
+        .toggle-switch.on::after { transform: translateX(20px); }
+
+        .recurring-options {
+            margin-top: 10px;
+            padding: 12px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .recurring-options.show { display: block; }
+
+        /* Integration box */
+        .integration-box {
+            background: #f8f8f8;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        .integration-icons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .integration-icon {
+            width: 36px;
+            height: 36px;
+            background: #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .integration-text { font-size: 11px; color: #888; }
+
+        /* Focus Mode */
+        .focus-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            color: white;
+        }
+
+        .focus-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 8px 14px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+        }
+
+        .focus-close:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        .focus-timer {
+            font-size: 100px;
+            font-weight: 200;
+            margin-bottom: 24px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .focus-task-display {
+            font-size: 22px;
+            max-width: 450px;
+            text-align: center;
+            line-height: 1.4;
+            margin-bottom: 40px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .focus-controls { display: flex; gap: 14px; }
+
+        .focus-btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .focus-btn.primary { background: #4285f4; color: white; }
+        .focus-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .focus-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: #4285f4;
+        }
+
+        .focus-setup h2 { font-size: 26px; font-weight: 500; margin-bottom: 28px; }
+
+        .focus-task-preview {
+            background: rgba(255,255,255,0.1);
+            padding: 18px 28px;
+            border-radius: 12px;
+            margin-bottom: 28px;
+            font-size: 18px;
+        }
+
+        .focus-duration-options {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+
+        .duration-option {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .duration-option:hover { background: rgba(255,255,255,0.15); }
+        .duration-option.selected { border-color: #4285f4; background: rgba(66, 133, 244, 0.2); }
+
+        /* ===== MOBILE STYLES ===== */
+        .mobile-container { display: none; }
+
+        .screen.mobile .desktop-layout,
+        .screen.mobile .priorities-strip { display: none; }
+
+        .screen.mobile .mobile-container { display: block; }
+
+        .mobile-panels {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .mobile-panels::-webkit-scrollbar { display: none; }
+
+        .mobile-panel {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            min-height: 620px;
+            padding: 14px;
+            overflow-y: auto;
+        }
+
+        .mobile-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .mobile-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .mobile-tab.active { color: #0066cc; border-bottom-color: #0066cc; }
+
+        .swipe-hint {
+            text-align: center;
+            padding: 6px;
+            font-size: 10px;
+            color: #aaa;
+            background: #fafafa;
+        }
+
+        .mobile-priority-section { margin-bottom: 20px; }
+
+        .mobile-priority-section h3 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .mobile-priority-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .mobile-priority-num {
+            width: 26px;
+            height: 26px;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .mobile-priority-num.work { background: #0066cc; }
+        .mobile-priority-num.personal { background: #28a745; }
+
+        .mobile-priority-title { font-size: 14px; color: #333; }
+
+        .mobile-task-list {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .mobile-task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 10px;
+        }
+
+        .mobile-task-item:last-child { border-bottom: none; }
+
+        .mobile-task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .mobile-task-checkbox.checked {
+            background: #0066cc;
+            border-color: #0066cc;
+        }
+
+        .mobile-task-content { flex: 1; min-width: 0; }
+
+        .mobile-task-title {
+            font-size: 14px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile-task-title.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .mobile-task-meta {
+            font-size: 11px;
+            color: #888;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 2px;
+        }
+
+        .mobile-task-actions { font-size: 16px; color: #ccc; padding: 4px; }
+
+        .mobile-section-header {
+            font-size: 11px;
+            font-weight: 600;
+            color: #868e96;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 16px 0 8px;
+        }
+
+        .mobile-section-header:first-child { margin-top: 0; }
+
+        .mobile-calendar-header {
+            background: #4285f4;
+            color: white;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .mobile-calendar-header h2 { font-size: 20px; font-weight: 500; }
+        .mobile-calendar-header p { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+
+        .mobile-calendar-event {
+            display: flex;
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 12px;
+        }
+
+        .mobile-event-time {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            min-width: 70px;
+        }
+
+        .mobile-event-details { flex: 1; }
+        .mobile-event-title { font-size: 14px; color: #333; margin-bottom: 2px; }
+        .mobile-event-location { font-size: 12px; color: #888; }
+
+        .mobile-fab {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #0066cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,102,204,0.3);
+            cursor: pointer;
+        }
+
+        .mobile-joke {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .mobile-joke-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+        .mobile-joke-text { font-size: 13px; line-height: 1.4; opacity: 0.95; }
+    </style>
+</head>
+<body>
+    <div class="wireframe-nav">
+        <span>v5:</span>
+        <button class="active" onclick="showScreen('dashboard')">Dashboard</button>
+        <button onclick="showScreen('work')">Work</button>
+        <button onclick="showScreen('personal')">Personal</button>
+        <button onclick="showScreen('quick-add')">Add Task</button>
+        <button onclick="showScreen('focus-setup')">Focus</button>
+        <button onclick="showScreen('celebration')">Celebration Demo</button>
+        <div class="device-toggle">
+            <button class="active" onclick="setDevice('desktop')">Desktop</button>
+            <button onclick="setDevice('mobile')">Mobile</button>
+        </div>
+    </div>
+
+    <div class="screen-container">
+        <!-- SCREEN 1: Dashboard -->
+        <div id="dashboard" class="screen desktop active">
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Work</span>
+                    <div class="priorities-list">
+                        <div class="priority-chip"><span class="priority-num work">1</span> Q1 Product Launch</div>
+                        <div class="priority-chip"><span class="priority-num work">2</span> Team Hiring</div>
+                        <div class="priority-chip"><span class="priority-num work">3</span> Platform Migration</div>
+                        <div class="priority-chip"><span class="priority-num work">4</span> Q2 Planning</div>
+                        <div class="priority-chip"><span class="priority-num work">5</span> Side Project</div>
+                        <div class="priority-chip add-new">+</div>
+                    </div>
+                </div>
+                <div class="priorities-row">
+                    <span class="priorities-label">Personal</span>
+                    <div class="priorities-list">
+                        <div class="priority-chip"><span class="priority-num personal">1</span> Health</div>
+                        <div class="priority-chip"><span class="priority-num personal">2</span> Spanish</div>
+                        <div class="priority-chip"><span class="priority-num personal">3</span> Home Reno</div>
+                        <div class="priority-chip"><span class="priority-num personal">4</span> Savings</div>
+                        <div class="priority-chip"><span class="priority-num personal">5</span> Family</div>
+                        <div class="priority-chip"><span class="priority-num personal">6</span> Reading</div>
+                        <div class="priority-chip"><span class="priority-num personal">7</span> Guitar</div>
+                        <div class="priority-chip"><span class="priority-num personal">8</span> Travel</div>
+                        <div class="priority-chip add-new">+</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="desktop-layout">
+                <div class="wf-sidebar" id="sidebar">
+                    <div class="sidebar-toggle">
+                        <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">◀</button>
+                    </div>
+                    <div class="sidebar-item active">
+                        <div class="sidebar-icon">📊</div>
+                        <span>Dashboard</span>
+                    </div>
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">Tasks</div>
+                    </div>
+                    <div class="sidebar-item" onclick="showScreen('work')">
+                        <div class="sidebar-icon">💼</div>
+                        <span>Work</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showScreen('personal')">
+                        <div class="sidebar-icon">🏠</div>
+                        <span>Personal</span>
+                    </div>
+                </div>
+                <div class="desktop-main">
+                    <p class="screen-title">Dashboard — Scales to fit screen. Collapse sidebar with ◀ button. Click checkboxes for random celebrations!</p>
+
+                    <!-- Morning Joke -->
+                    <div class="morning-greeting">
+                        <div class="greeting-header">
+                            <div class="greeting-title">Good morning, Danny!</div>
+                            <span class="greeting-close">×</span>
+                        </div>
+                        <div class="joke-text">
+                            Why do programmers prefer dark mode?
+                            <div class="joke-punchline">Because light attracts bugs.</div>
+                        </div>
+                    </div>
+
+                    <div class="three-col">
+                        <!-- Work Tasks -->
+                        <div class="wf-section">
+                            <div class="wf-section-header">
+                                <h2>Work — Today</h2>
+                                <a class="wf-link" onclick="showScreen('work')">All</a>
+                            </div>
+                            <div class="task-list">
+                                <div class="task-item">
+                                    <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                    <div class="task-content">
+                                        <span class="task-title">Daily standup</span>
+                                        <span class="task-recurring">↻</span>
+                                    </div>
+                                    <div class="task-actions">
+                                        <div class="task-action-btn focus-btn">⏱</div>
+                                        <div class="task-action-btn">⋯</div>
+                                    </div>
+                                </div>
+                                <div class="task-item">
+                                    <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                    <div class="task-content">
+                                        <span class="task-title">Review PRs for launch</span>
+                                        <span class="task-priority-tag">Q1</span>
+                                    </div>
+                                    <div class="task-actions">
+                                        <div class="task-action-btn focus-btn">⏱</div>
+                                        <div class="task-action-btn">⋯</div>
+                                    </div>
+                                </div>
+                                <div class="task-item">
+                                    <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                    <div class="task-content">
+                                        <span class="task-title">Prep all-hands slides</span>
+                                        <span class="task-meta">3pm</span>
+                                    </div>
+                                    <div class="task-actions">
+                                        <div class="task-action-btn focus-btn">⏱</div>
+                                        <div class="task-action-btn">⋯</div>
+                                    </div>
+                                </div>
+                                <div class="task-item">
+                                    <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                    <div class="task-content">
+                                        <span class="task-title">Interview candidate</span>
+                                        <span class="task-priority-tag">Hiring</span>
+                                    </div>
+                                    <div class="task-actions">
+                                        <div class="task-action-btn focus-btn">⏱</div>
+                                        <div class="task-action-btn">⋯</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="add-task-btn" onclick="showScreen('quick-add')">+ Add work task</div>
+                        </div>
+
+                        <!-- Personal Tasks -->
+                        <div class="wf-section">
+                            <div class="wf-section-header">
+                                <h2>Personal — Today</h2>
+                                <a class="wf-link" onclick="showScreen('personal')">All</a>
+                            </div>
+                            <div class="task-list">
+                                <div class="task-item">
+                                    <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                    <div class="task-content">
+                                        <span class="task-title">Spanish practice</span>
+                                        <span class="task-recurring">↻ 45d</span>
+                                    </div>
+                                    <div class="task-actions">
+                                        <div class="task-action-btn focus-btn">⏱</div>
+                                        <div class="task-action-btn">⋯</div>
+                                    </div>
+                                </div>
+                                <div class="task-item">
+                                    <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                    <div class="task-content">
+                                        <span class="task-title">Workout</span>
+                                        <span class="task-recurring">↻</span>
+                                    </div>
+                                    <div class="task-actions">
+                                        <div class="task-action-btn focus-btn">⏱</div>
+                                        <div class="task-action-btn">⋯</div>
+                                    </div>
+                                </div>
+                                <div class="task-item">
+                                    <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                    <div class="task-content">
+                                        <span class="task-title">Grocery shopping</span>
+                                        <span class="task-meta">Eve</span>
+                                    </div>
+                                    <div class="task-actions">
+                                        <div class="task-action-btn focus-btn">⏱</div>
+                                        <div class="task-action-btn">⋯</div>
+                                    </div>
+                                </div>
+                                <div class="task-item">
+                                    <div class="task-checkbox" onclick="celebrateTask(this)"></div>
+                                    <div class="task-content">
+                                        <span class="task-title">Call contractor</span>
+                                        <span class="task-priority-tag">Home</span>
+                                    </div>
+                                    <div class="task-actions">
+                                        <div class="task-action-btn focus-btn">⏱</div>
+                                        <div class="task-action-btn">⋯</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="add-task-btn" onclick="showScreen('quick-add')">+ Add personal task</div>
+
+                            <div class="demo-section">
+                                <div class="demo-section-title">Quick Actions (⋯)</div>
+                                <div class="demo-dropdown">
+                                    <div class="dropdown-item"><span class="icon">→</span> Tomorrow</div>
+                                    <div class="dropdown-item"><span class="icon">→→</span> Next week</div>
+                                    <div class="dropdown-item"><span class="icon">📥</span> Backburner</div>
+                                    <div class="dropdown-divider"></div>
+                                    <div class="dropdown-item"><span class="icon">📅</span> Pick date...</div>
+                                    <div class="dropdown-item"><span class="icon">↻</span> Set recurring...</div>
+                                    <div class="dropdown-divider"></div>
+                                    <div class="dropdown-item" style="color:#dc3545;"><span class="icon">🗑</span> Delete</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calendar -->
+                        <div class="wf-section">
+                            <div class="calendar-section">
+                                <div class="calendar-header">
+                                    <h3>Calendar</h3>
+                                    <span class="calendar-date">Wed, Feb 5</span>
+                                </div>
+                                <div class="calendar-events">
+                                    <div class="calendar-event">
+                                        <div class="event-color blue"></div>
+                                        <div class="event-time">9:00</div>
+                                        <div class="event-details">
+                                            <div class="event-title">Team Standup</div>
+                                            <div class="event-location">Zoom</div>
+                                        </div>
+                                    </div>
+                                    <div class="calendar-event">
+                                        <div class="event-color green"></div>
+                                        <div class="event-time">11:00</div>
+                                        <div class="event-details">
+                                            <div class="event-title">1:1 with Sarah</div>
+                                            <div class="event-location">Room B</div>
+                                        </div>
+                                    </div>
+                                    <div class="calendar-event">
+                                        <div class="event-color purple"></div>
+                                        <div class="event-time">2:00</div>
+                                        <div class="event-details">
+                                            <div class="event-title">All-Hands Meeting</div>
+                                            <div class="event-location">Main Hall</div>
+                                        </div>
+                                    </div>
+                                    <div class="calendar-event">
+                                        <div class="event-color orange"></div>
+                                        <div class="event-time">5:30</div>
+                                        <div class="event-details">
+                                            <div class="event-title">Gym - Leg Day</div>
+                                            <div class="event-location">Equinox</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile -->
+            <div class="mobile-container">
+                <div class="mobile-tabs">
+                    <div class="mobile-tab" onclick="scrollToPanel(0)">Priorities</div>
+                    <div class="mobile-tab active" onclick="scrollToPanel(1)">Today</div>
+                    <div class="mobile-tab" onclick="scrollToPanel(2)">Calendar</div>
+                </div>
+                <div class="swipe-hint">← Swipe →</div>
+                <div class="mobile-panels" id="mobilePanels">
+                    <div class="mobile-panel">
+                        <div class="mobile-priority-section">
+                            <h3>Work Priorities</h3>
+                            <div class="mobile-priority-card"><div class="mobile-priority-num work">1</div><div class="mobile-priority-title">Q1 Product Launch</div></div>
+                            <div class="mobile-priority-card"><div class="mobile-priority-num work">2</div><div class="mobile-priority-title">Team Hiring</div></div>
+                            <div class="mobile-priority-card"><div class="mobile-priority-num work">3</div><div class="mobile-priority-title">Platform Migration</div></div>
+                        </div>
+                        <div class="mobile-priority-section">
+                            <h3>Personal Priorities</h3>
+                            <div class="mobile-priority-card"><div class="mobile-priority-num personal">1</div><div class="mobile-priority-title">Health & Fitness</div></div>
+                            <div class="mobile-priority-card"><div class="mobile-priority-num personal">2</div><div class="mobile-priority-title">Learn Spanish</div></div>
+                            <div class="mobile-priority-card"><div class="mobile-priority-num personal">3</div><div class="mobile-priority-title">Home Renovation</div></div>
+                        </div>
+                    </div>
+                    <div class="mobile-panel">
+                        <div class="mobile-joke">
+                            <div class="mobile-joke-title">Good morning!</div>
+                            <div class="mobile-joke-text">Why do programmers prefer dark mode? Because light attracts bugs.</div>
+                        </div>
+                        <div class="mobile-section-header">Work</div>
+                        <div class="mobile-task-list">
+                            <div class="mobile-task-item"><div class="mobile-task-checkbox" onclick="celebrateTask(this)"></div><div class="mobile-task-content"><div class="mobile-task-title">Daily standup</div><div class="mobile-task-meta"><span class="task-recurring">↻</span></div></div><div class="mobile-task-actions">⋯</div></div>
+                            <div class="mobile-task-item"><div class="mobile-task-checkbox" onclick="celebrateTask(this)"></div><div class="mobile-task-content"><div class="mobile-task-title">Review PRs for launch</div></div><div class="mobile-task-actions">⋯</div></div>
+                        </div>
+                        <div class="mobile-section-header">Personal</div>
+                        <div class="mobile-task-list">
+                            <div class="mobile-task-item"><div class="mobile-task-checkbox" onclick="celebrateTask(this)"></div><div class="mobile-task-content"><div class="mobile-task-title">Spanish practice</div><div class="mobile-task-meta"><span class="task-recurring">↻ 45d</span></div></div><div class="mobile-task-actions">⋯</div></div>
+                            <div class="mobile-task-item"><div class="mobile-task-checkbox" onclick="celebrateTask(this)"></div><div class="mobile-task-content"><div class="mobile-task-title">Workout</div></div><div class="mobile-task-actions">⋯</div></div>
+                        </div>
+                    </div>
+                    <div class="mobile-panel" style="padding: 0;">
+                        <div class="mobile-calendar-header"><h2>Wednesday</h2><p>February 5, 2026</p></div>
+                        <div class="mobile-calendar-event"><div class="event-color blue"></div><div class="mobile-event-time">9:00 AM</div><div class="mobile-event-details"><div class="mobile-event-title">Team Standup</div><div class="mobile-event-location">Zoom</div></div></div>
+                        <div class="mobile-calendar-event"><div class="event-color green"></div><div class="mobile-event-time">11:00 AM</div><div class="mobile-event-details"><div class="mobile-event-title">1:1 with Sarah</div><div class="mobile-event-location">Room B</div></div></div>
+                        <div class="mobile-calendar-event"><div class="event-color purple"></div><div class="mobile-event-time">2:00 PM</div><div class="mobile-event-details"><div class="mobile-event-title">All-Hands</div><div class="mobile-event-location">Main Hall</div></div></div>
+                    </div>
+                </div>
+                <div class="mobile-fab" onclick="showScreen('quick-add')">+</div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: Work Tasks -->
+        <div id="work" class="screen desktop">
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Work</span>
+                    <div class="priorities-list">
+                        <div class="priority-chip"><span class="priority-num work">1</span> Q1 Product Launch</div>
+                        <div class="priority-chip"><span class="priority-num work">2</span> Team Hiring</div>
+                        <div class="priority-chip"><span class="priority-num work">3</span> Platform Migration</div>
+                    </div>
+                </div>
+            </div>
+            <div class="desktop-layout">
+                <div class="wf-sidebar" id="sidebarWork">
+                    <div class="sidebar-toggle"><button class="sidebar-toggle-btn" onclick="toggleSidebar('sidebarWork')">◀</button></div>
+                    <div class="sidebar-item" onclick="showScreen('dashboard')"><div class="sidebar-icon">📊</div><span>Dashboard</span></div>
+                    <div class="sidebar-section"><div class="sidebar-section-title">Tasks</div></div>
+                    <div class="sidebar-item active"><div class="sidebar-icon">💼</div><span>Work</span></div>
+                    <div class="sidebar-item" onclick="showScreen('personal')"><div class="sidebar-icon">🏠</div><span>Personal</span></div>
+                </div>
+                <div class="desktop-main">
+                    <p class="screen-title">Work Tasks — Now with responsive layout and collapsible sidebar.</p>
+                    <div class="wf-section-header" style="margin-bottom: 16px;">
+                        <h2 style="font-size: 20px; color: #333; text-transform: none;">Work Tasks</h2>
+                        <button class="btn btn-primary" onclick="showScreen('quick-add')">+ Add</button>
+                    </div>
+                    <div class="filter-bar">
+                        <div class="filter-chip active">All</div>
+                        <div class="filter-chip">Today</div>
+                        <div class="filter-chip">Week</div>
+                        <div class="filter-chip">Backburner</div>
+                    </div>
+                    <div class="wf-section">
+                        <div class="wf-section-header"><h2>Recurring</h2></div>
+                        <div class="task-list">
+                            <div class="task-item"><div class="task-checkbox" onclick="celebrateTask(this)"></div><div class="task-content"><span class="task-title">Daily standup</span><span class="task-recurring">↻ Weekdays 9am</span></div><div class="task-actions"><div class="task-action-btn focus-btn">⏱</div><div class="task-action-btn">⋯</div></div></div>
+                            <div class="task-item"><div class="task-checkbox" onclick="celebrateTask(this)"></div><div class="task-content"><span class="task-title">Weekly team sync</span><span class="task-recurring">↻ Mondays</span></div><div class="task-actions"><div class="task-action-btn focus-btn">⏱</div><div class="task-action-btn">⋯</div></div></div>
+                        </div>
+                    </div>
+                    <div class="wf-section">
+                        <div class="wf-section-header"><h2>Today</h2></div>
+                        <div class="task-list">
+                            <div class="task-item"><div class="task-checkbox" onclick="celebrateTask(this)"></div><div class="task-content"><span class="task-title">Review PRs for launch feature</span><span class="task-priority-tag">Q1</span></div><div class="task-actions"><div class="task-action-btn focus-btn">⏱</div><div class="task-action-btn">⋯</div></div></div>
+                            <div class="task-item"><div class="task-checkbox" onclick="celebrateTask(this)"></div><div class="task-content"><span class="task-title">Prep all-hands slides</span><span class="task-meta">3pm</span></div><div class="task-actions"><div class="task-action-btn focus-btn">⏱</div><div class="task-action-btn">⋯</div></div></div>
+                        </div>
+                        <div class="add-task-btn" onclick="showScreen('quick-add')">+ Add task</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-container">
+                <div style="padding: 14px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;"><h2 style="font-size: 18px;">Work Tasks</h2><a class="wf-link" onclick="showScreen('dashboard')">← Back</a></div>
+                <div style="padding: 0 14px 80px;">
+                    <div class="mobile-section-header">Today</div>
+                    <div class="mobile-task-list">
+                        <div class="mobile-task-item"><div class="mobile-task-checkbox" onclick="celebrateTask(this)"></div><div class="mobile-task-content"><div class="mobile-task-title">Review PRs</div></div><div class="mobile-task-actions">⋯</div></div>
+                    </div>
+                </div>
+                <div class="mobile-fab" onclick="showScreen('quick-add')">+</div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: Personal Tasks -->
+        <div id="personal" class="screen desktop">
+            <div class="priorities-strip">
+                <div class="priorities-row">
+                    <span class="priorities-label">Personal</span>
+                    <div class="priorities-list">
+                        <div class="priority-chip"><span class="priority-num personal">1</span> Health</div>
+                        <div class="priority-chip"><span class="priority-num personal">2</span> Spanish</div>
+                        <div class="priority-chip"><span class="priority-num personal">3</span> Home Reno</div>
+                    </div>
+                </div>
+            </div>
+            <div class="desktop-layout">
+                <div class="wf-sidebar" id="sidebarPersonal">
+                    <div class="sidebar-toggle"><button class="sidebar-toggle-btn" onclick="toggleSidebar('sidebarPersonal')">◀</button></div>
+                    <div class="sidebar-item" onclick="showScreen('dashboard')"><div class="sidebar-icon">📊</div><span>Dashboard</span></div>
+                    <div class="sidebar-section"><div class="sidebar-section-title">Tasks</div></div>
+                    <div class="sidebar-item" onclick="showScreen('work')"><div class="sidebar-icon">💼</div><span>Work</span></div>
+                    <div class="sidebar-item active"><div class="sidebar-icon">🏠</div><span>Personal</span></div>
+                </div>
+                <div class="desktop-main">
+                    <p class="screen-title">Personal Tasks</p>
+                    <div class="wf-section-header" style="margin-bottom: 16px;">
+                        <h2 style="font-size: 20px; color: #333; text-transform: none;">Personal Tasks</h2>
+                        <button class="btn btn-primary" onclick="showScreen('quick-add')">+ Add</button>
+                    </div>
+                    <div class="wf-section">
+                        <div class="wf-section-header"><h2>Recurring</h2></div>
+                        <div class="task-list">
+                            <div class="task-item"><div class="task-checkbox" onclick="celebrateTask(this)"></div><div class="task-content"><span class="task-title">Spanish practice</span><span class="task-recurring">↻ Daily · 45d streak</span></div><div class="task-actions"><div class="task-action-btn focus-btn">⏱</div><div class="task-action-btn">⋯</div></div></div>
+                            <div class="task-item"><div class="task-checkbox" onclick="celebrateTask(this)"></div><div class="task-content"><span class="task-title">Morning workout</span><span class="task-recurring">↻ Daily</span></div><div class="task-actions"><div class="task-action-btn focus-btn">⏱</div><div class="task-action-btn">⋯</div></div></div>
+                        </div>
+                    </div>
+                    <div class="wf-section">
+                        <div class="wf-section-header"><h2>Today</h2></div>
+                        <div class="task-list">
+                            <div class="task-item"><div class="task-checkbox" onclick="celebrateTask(this)"></div><div class="task-content"><span class="task-title">Grocery shopping</span><span class="task-meta">Evening</span></div><div class="task-actions"><div class="task-action-btn focus-btn">⏱</div><div class="task-action-btn">⋯</div></div></div>
+                            <div class="task-item"><div class="task-checkbox" onclick="celebrateTask(this)"></div><div class="task-content"><span class="task-title">Call contractor</span><span class="task-priority-tag">Home</span></div><div class="task-actions"><div class="task-action-btn focus-btn">⏱</div><div class="task-action-btn">⋯</div></div></div>
+                        </div>
+                        <div class="add-task-btn" onclick="showScreen('quick-add')">+ Add task</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-container">
+                <div style="padding: 14px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;"><h2 style="font-size: 18px;">Personal Tasks</h2><a class="wf-link" onclick="showScreen('dashboard')">← Back</a></div>
+                <div style="padding: 0 14px 80px;">
+                    <div class="mobile-section-header">Today</div>
+                    <div class="mobile-task-list">
+                        <div class="mobile-task-item"><div class="mobile-task-checkbox" onclick="celebrateTask(this)"></div><div class="mobile-task-content"><div class="mobile-task-title">Spanish practice</div></div><div class="mobile-task-actions">⋯</div></div>
+                    </div>
+                </div>
+                <div class="mobile-fab" onclick="showScreen('quick-add')">+</div>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: Quick Add -->
+        <div id="quick-add" class="screen desktop">
+            <div class="desktop-layout" style="min-height: auto;">
+                <div class="wf-sidebar" id="sidebarAdd">
+                    <div class="sidebar-toggle"><button class="sidebar-toggle-btn" onclick="toggleSidebar('sidebarAdd')">◀</button></div>
+                    <div class="sidebar-item" onclick="showScreen('dashboard')"><div class="sidebar-icon">📊</div><span>Dashboard</span></div>
+                </div>
+                <div class="desktop-main" style="display: flex; justify-content: center; align-items: flex-start; padding-top: 40px;">
+                    <div class="modal">
+                        <div class="modal-header"><h3>Add New Task</h3><div class="modal-close" onclick="showScreen('dashboard')">×</div></div>
+                        <div class="modal-body">
+                            <div class="input-group"><label class="input-label">Task</label><input type="text" class="input-field" placeholder="What do you need to do?"></div>
+                            <div class="input-group"><label class="input-label">Category</label><div class="chip-group"><div class="chip">Work</div><div class="chip selected">Personal</div></div></div>
+                            <div class="input-group"><label class="input-label">When</label><div class="chip-group"><div class="chip selected">Today</div><div class="chip">Tomorrow</div><div class="chip">This Week</div><div class="chip">Backburner</div></div></div>
+                            <div class="toggle-row"><div class="toggle-label">Recurring task</div><div class="toggle-switch on" onclick="this.classList.toggle('on'); document.getElementById('recurringOpts').classList.toggle('show');"></div></div>
+                            <div id="recurringOpts" class="recurring-options show"><label class="input-label">Repeat</label><div class="chip-group"><div class="chip selected">Daily</div><div class="chip">Weekdays</div><div class="chip">Weekly</div><div class="chip">Monthly</div></div></div>
+                            <div class="integration-box"><div class="integration-icons"><div class="integration-icon">🎤</div><div class="integration-icon">💬</div></div><div class="integration-text">Siri · WhatsApp · Shortcuts</div></div>
+                        </div>
+                        <div class="modal-footer"><button class="btn btn-secondary" onclick="showScreen('dashboard')">Cancel</button><button class="btn btn-primary" onclick="showScreen('dashboard')">Add Task</button></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-container">
+                <div style="padding: 14px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;"><h2 style="font-size: 16px;">Add Task</h2><a class="wf-link" onclick="showScreen('dashboard')">Cancel</a></div>
+                <div style="padding: 14px;">
+                    <div class="input-group"><label class="input-label">Task</label><input type="text" class="input-field" placeholder="What do you need to do?"></div>
+                    <div class="input-group"><label class="input-label">Category</label><div class="chip-group"><div class="chip">Work</div><div class="chip selected">Personal</div></div></div>
+                    <div class="input-group"><label class="input-label">When</label><div class="chip-group"><div class="chip selected">Today</div><div class="chip">Tomorrow</div><div class="chip">Week</div><div class="chip">Later</div></div></div>
+                    <div class="toggle-row"><div class="toggle-label">Recurring</div><div class="toggle-switch"></div></div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="showScreen('dashboard')">Add Task</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: Focus Mode -->
+        <div id="focus-setup" class="screen desktop">
+            <div class="focus-overlay">
+                <div class="focus-close" onclick="showScreen('dashboard')">✕ Exit</div>
+                <div class="focus-setup">
+                    <h2>Focus on one thing</h2>
+                    <div class="focus-task-preview">Review PRs for launch feature</div>
+                    <div style="margin-bottom: 14px; font-size: 14px; opacity: 0.7;">How long?</div>
+                    <div class="focus-duration-options">
+                        <div class="duration-option">10m</div>
+                        <div class="duration-option selected">20m</div>
+                        <div class="duration-option">30m</div>
+                        <div class="duration-option">45m</div>
+                        <div class="duration-option">60m</div>
+                    </div>
+                    <button class="focus-btn primary" onclick="showScreen('dashboard')">Start Focus</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 6: Celebration Demo -->
+        <div id="celebration" class="screen desktop">
+            <div class="desktop-layout">
+                <div class="wf-sidebar" id="sidebarCelebrate">
+                    <div class="sidebar-toggle"><button class="sidebar-toggle-btn" onclick="toggleSidebar('sidebarCelebrate')">◀</button></div>
+                    <div class="sidebar-item" onclick="showScreen('dashboard')"><div class="sidebar-icon">📊</div><span>Dashboard</span></div>
+                </div>
+                <div class="desktop-main">
+                    <p class="screen-title">Celebration Demo — Each checkbox triggers a RANDOM celebration: confetti, champagne, cat gifs, fireworks, emoji bursts, rainbows!</p>
+                    <div style="max-width: 500px; margin: 40px auto; text-align: center;">
+                        <h2 style="font-size: 24px; margin-bottom: 12px;">Complete tasks to celebrate!</h2>
+                        <p style="color: #666; margin-bottom: 32px;">Each one is different. Try them all!</p>
+                        <div class="task-list">
+                            <div class="task-item" style="padding: 18px;"><div class="task-checkbox" onclick="celebrateTask(this)" style="width: 24px; height: 24px;"></div><div class="task-content"><span class="task-title" style="font-size: 16px;">Task 1 - Click me!</span></div></div>
+                            <div class="task-item" style="padding: 18px;"><div class="task-checkbox" onclick="celebrateTask(this)" style="width: 24px; height: 24px;"></div><div class="task-content"><span class="task-title" style="font-size: 16px;">Task 2 - Try this one!</span></div></div>
+                            <div class="task-item" style="padding: 18px;"><div class="task-checkbox" onclick="celebrateTask(this)" style="width: 24px; height: 24px;"></div><div class="task-content"><span class="task-title" style="font-size: 16px;">Task 3 - What will you get?</span></div></div>
+                            <div class="task-item" style="padding: 18px;"><div class="task-checkbox" onclick="celebrateTask(this)" style="width: 24px; height: 24px;"></div><div class="task-content"><span class="task-title" style="font-size: 16px;">Task 4 - Keep going!</span></div></div>
+                            <div class="task-item" style="padding: 18px;"><div class="task-checkbox" onclick="celebrateTask(this)" style="width: 24px; height: 24px;"></div><div class="task-content"><span class="task-title" style="font-size: 16px;">Task 5 - One more!</span></div></div>
+                            <div class="task-item" style="padding: 18px;"><div class="task-checkbox" onclick="celebrateTask(this)" style="width: 24px; height: 24px;"></div><div class="task-content"><span class="task-title" style="font-size: 16px;">Task 6 - Last one!</span></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="celebration-overlay" id="celebrationOverlay"></div>
+
+    <script>
+        let currentDevice = 'desktop';
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            document.querySelectorAll('.wireframe-nav button').forEach(b => {
+                const btnText = b.textContent.toLowerCase();
+                if (btnText === screenId.toLowerCase() ||
+                    (screenId === 'focus-setup' && btnText === 'focus') ||
+                    (screenId === 'celebration' && btnText === 'celebration demo')) {
+                    b.classList.add('active');
+                } else if (!btnText.includes('desktop') && !btnText.includes('mobile')) {
+                    b.classList.remove('active');
+                }
+            });
+            setDevice(currentDevice);
+        }
+
+        function setDevice(device) {
+            currentDevice = device;
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('desktop', 'mobile');
+                s.classList.add(device);
+            });
+            document.querySelectorAll('.device-toggle button').forEach(b => {
+                b.classList.toggle('active', b.textContent.toLowerCase() === device);
+            });
+        }
+
+        function toggleSidebar(id = 'sidebar') {
+            const sidebar = document.getElementById(id);
+            sidebar.classList.toggle('collapsed');
+            const btn = sidebar.querySelector('.sidebar-toggle-btn');
+            btn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        function scrollToPanel(index) {
+            const panels = document.getElementById('mobilePanels');
+            if (panels) {
+                panels.scrollTo({ left: panels.offsetWidth * index, behavior: 'smooth' });
+            }
+            document.querySelectorAll('.mobile-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+        }
+
+        // Cat images (using placeholder URLs - in real app would be actual gifs)
+        const catImages = [
+            'https://cataas.com/cat/gif?t=' + Date.now(),
+            'https://cataas.com/cat/cute?t=' + Date.now(),
+            'https://cataas.com/cat/says/NICE?t=' + Date.now(),
+        ];
+
+        // Celebration types
+        const celebrationTypes = [
+            'confetti',
+            'champagne',
+            'cat',
+            'fireworks',
+            'emoji',
+            'stars',
+            'rainbow'
+        ];
+
+        function celebrateTask(checkbox) {
+            if (checkbox.classList.contains('checked')) return;
+            checkbox.classList.add('checked');
+
+            const taskItem = checkbox.closest('.task-item') || checkbox.closest('.mobile-task-item');
+            if (taskItem) {
+                const title = taskItem.querySelector('.task-title, .mobile-task-title');
+                if (title) title.classList.add('completed');
+            }
+
+            // Pick random celebration
+            const type = celebrationTypes[Math.floor(Math.random() * celebrationTypes.length)];
+            const overlay = document.getElementById('celebrationOverlay');
+
+            switch(type) {
+                case 'confetti':
+                    createConfetti(overlay);
+                    break;
+                case 'champagne':
+                    createChampagne(overlay);
+                    break;
+                case 'cat':
+                    createCatPopup();
+                    break;
+                case 'fireworks':
+                    createFireworks(overlay);
+                    break;
+                case 'emoji':
+                    createEmojiBurst(overlay);
+                    break;
+                case 'stars':
+                    createStarBurst(overlay);
+                    break;
+                case 'rainbow':
+                    createRainbow(overlay);
+                    break;
+            }
+
+            // Toast message
+            const messages = [
+                "Nice work!", "You're on fire!", "Crushed it!", "Boom!",
+                "Nailed it!", "Amazing!", "Keep it up!", "Unstoppable!",
+                "Legend!", "Way to go!", "Superstar!", "Killing it!"
+            ];
+            showToast(messages[Math.floor(Math.random() * messages.length)]);
+        }
+
+        function createConfetti(overlay) {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#a29bfe', '#fd79a8', '#00b894'];
+            for (let i = 0; i < 60; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.animationDuration = (2 + Math.random()) + 's';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0%';
+                confetti.style.width = (6 + Math.random() * 8) + 'px';
+                confetti.style.height = (6 + Math.random() * 8) + 'px';
+                overlay.appendChild(confetti);
+            }
+            setTimeout(() => overlay.innerHTML = '', 3500);
+        }
+
+        function createChampagne(overlay) {
+            const container = document.createElement('div');
+            container.className = 'champagne-container';
+            container.innerHTML = '🍾';
+            overlay.appendChild(container);
+
+            // Bubbles
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.className = 'champagne-bubbles';
+            for (let i = 0; i < 20; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.left = (Math.random() * 60 - 30) + 'px';
+                bubble.style.animationDelay = Math.random() * 0.5 + 's';
+                bubbleContainer.appendChild(bubble);
+            }
+            container.appendChild(bubbleContainer);
+
+            // Also add some confetti
+            createConfetti(overlay);
+            setTimeout(() => container.remove(), 3000);
+        }
+
+        function createCatPopup() {
+            const popup = document.createElement('div');
+            popup.className = 'cat-celebration';
+            popup.innerHTML = `
+                <img src="https://cataas.com/cat/gif?width=200&height=150&t=${Date.now()}" alt="Celebration cat" onerror="this.src='https://placekitten.com/200/150'">
+                <div class="cat-text">Purrfect! 🐱</div>
+            `;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 3000);
+        }
+
+        function createFireworks(overlay) {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500'];
+            for (let burst = 0; burst < 5; burst++) {
+                const centerX = 20 + Math.random() * 60;
+                const centerY = 20 + Math.random() * 40;
+                setTimeout(() => {
+                    for (let i = 0; i < 20; i++) {
+                        const spark = document.createElement('div');
+                        spark.className = 'firework';
+                        const angle = (i / 20) * Math.PI * 2;
+                        const distance = 50 + Math.random() * 50;
+                        spark.style.left = centerX + '%';
+                        spark.style.top = centerY + '%';
+                        spark.style.background = colors[Math.floor(Math.random() * colors.length)];
+                        spark.style.boxShadow = `0 0 6px ${spark.style.background}`;
+                        spark.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+                        spark.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+                        spark.style.animation = `firework-explode 1s ease-out forwards`;
+                        spark.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+                        overlay.appendChild(spark);
+                    }
+                }, burst * 300);
+            }
+            setTimeout(() => overlay.innerHTML = '', 3000);
+        }
+
+        function createEmojiBurst(overlay) {
+            const emojis = ['🎉', '🎊', '⭐', '💫', '✨', '🌟', '🔥', '💪', '👏', '🙌', '🎯', '💯'];
+            for (let i = 0; i < 15; i++) {
+                const emoji = document.createElement('div');
+                emoji.className = 'emoji-burst';
+                emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                emoji.style.left = 30 + Math.random() * 40 + '%';
+                emoji.style.top = 40 + Math.random() * 20 + '%';
+                emoji.style.animationDelay = Math.random() * 0.3 + 's';
+                overlay.appendChild(emoji);
+            }
+            setTimeout(() => overlay.innerHTML = '', 2500);
+        }
+
+        function createStarBurst(overlay) {
+            for (let i = 0; i < 30; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.textContent = '⭐';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 0.5 + 's';
+                star.style.fontSize = (16 + Math.random() * 24) + 'px';
+                overlay.appendChild(star);
+            }
+            setTimeout(() => overlay.innerHTML = '', 2000);
+        }
+
+        function createRainbow(overlay) {
+            const wave = document.createElement('div');
+            wave.className = 'rainbow-wave';
+            overlay.appendChild(wave);
+            // Also add some emoji
+            createEmojiBurst(overlay);
+            setTimeout(() => wave.remove(), 2500);
+        }
+
+        function showToast(message) {
+            const existing = document.querySelector('.task-complete-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'task-complete-toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // Event listeners
+        document.querySelectorAll('.duration-option').forEach(opt => {
+            opt.addEventListener('click', function() {
+                document.querySelectorAll('.duration-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        document.querySelectorAll('.chip-group .chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const panels = document.getElementById('mobilePanels');
+            if (panels) {
+                panels.addEventListener('scroll', () => {
+                    const index = Math.round(panels.scrollLeft / panels.offsetWidth);
+                    document.querySelectorAll('.mobile-tab').forEach((tab, i) => {
+                        tab.classList.toggle('active', i === index);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
