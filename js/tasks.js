@@ -106,17 +106,30 @@ async function completeTask(taskId, type) {
     }
 }
 
-// Create next occurrence of recurring task
+// Create next occurrence of recurring task (silently, no toast)
 async function createNextRecurrence(task) {
     const nextDate = calculateNextRecurrence(task.recurring, task.dueDate);
+    const userDoc = getUserDoc();
 
-    await addTask(task.type, task.title, {
+    const newTask = {
+        title: task.title,
+        type: task.type,
         category: 'today',
         dueDate: nextDate,
         recurring: task.recurring,
         recurringPattern: task.recurringPattern,
-        priorityId: task.priorityId
-    });
+        priorityId: task.priorityId || null,
+        completed: false,
+        completedAt: null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+        await userDoc.collection('tasks').add(newTask);
+        // No toast - silently create next occurrence
+    } catch (error) {
+        console.error('Error creating next recurrence:', error);
+    }
 }
 
 // Calculate next recurrence date
@@ -201,21 +214,41 @@ function formatCategory(category) {
 
 // Get tasks by category
 function getTasksByCategory(type, category) {
-    return tasks[type].filter(task => {
-        if (task.completed && category !== 'completed') return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        // Recurring section shows all recurring tasks
-        if (category === 'recurring') {
-            return task.recurring && !task.completed;
+    return tasks[type].filter(task => {
+        // Show completed tasks in 'completed' section, or if completed today (greyed out)
+        if (task.completed) {
+            if (category === 'completed') return true;
+            // Show today's completed tasks in their original section
+            if (task.completedAt) {
+                const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt);
+                completedDate.setHours(0, 0, 0, 0);
+                if (completedDate.getTime() !== today.getTime()) return false;
+                // Fall through to categorize completed task
+            } else {
+                return false;
+            }
         }
 
-        // Skip recurring tasks from other sections (they show in recurring)
-        if (task.recurring && category !== 'today') return false;
+        // Recurring section shows all recurring tasks that are due today or earlier
+        if (category === 'recurring') {
+            if (!task.recurring || task.completed) return false;
+            // Only show in recurring if due today or no due date
+            if (task.dueDate) {
+                const dueDate = new Date(task.dueDate);
+                dueDate.setHours(0, 0, 0, 0);
+                return dueDate <= today;
+            }
+            return true;
+        }
+
+        // Skip recurring tasks from other sections (they show in recurring only)
+        if (task.recurring) return false;
 
         // Check due date for dynamic categorization using calendar weeks
         if (task.dueDate) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
             const dueDate = new Date(task.dueDate);
             dueDate.setHours(0, 0, 0, 0);
 
@@ -223,30 +256,46 @@ function getTasksByCategory(type, category) {
             const endOfThisWeek = new Date(today);
             const daysUntilSunday = 7 - today.getDay();
             endOfThisWeek.setDate(today.getDate() + daysUntilSunday);
+            endOfThisWeek.setHours(23, 59, 59, 999);
 
             // Get end of next week
             const endOfNextWeek = new Date(endOfThisWeek);
             endOfNextWeek.setDate(endOfNextWeek.getDate() + 7);
 
-            if (category === 'today' && dueDate <= today) return true;
-            if (category === 'thisWeek' && dueDate > today && dueDate <= endOfThisWeek) return true;
-            if (category === 'nextWeek' && dueDate > endOfThisWeek && dueDate <= endOfNextWeek) return true;
-            if (category === 'beyond' && dueDate > endOfNextWeek) return true;
+            // Use dueDate exclusively for categorization when it exists
+            if (category === 'today') return dueDate <= today;
+            if (category === 'thisWeek') return dueDate > today && dueDate <= endOfThisWeek;
+            if (category === 'nextWeek') return dueDate > endOfThisWeek && dueDate <= endOfNextWeek;
+            if (category === 'beyond') return dueDate > endOfNextWeek;
+            if (category === 'backburner') return false; // Tasks with dates aren't backburner
+            return false; // Has dueDate, so don't use task.category
         }
 
+        // No dueDate - use task.category
         return task.category === category;
     }).sort((a, b) => (a.order || 0) - (b.order || 0));
 }
 
-// Get today's tasks (for dashboard)
+// Get today's tasks (for dashboard) - includes today's completed tasks
 function getTodayTasks(type) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     return tasks[type].filter(task => {
-        if (task.completed) return false;
+        // Include today's completed tasks (greyed out)
+        if (task.completed) {
+            if (task.completedAt) {
+                const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt);
+                completedDate.setHours(0, 0, 0, 0);
+                if (completedDate.getTime() !== today.getTime()) return false;
+                // Fall through to check if it was a today task
+            } else {
+                return false;
+            }
+        }
 
         // Include tasks due today or earlier, or tasks with category 'today'
         if (task.dueDate) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
             const dueDate = new Date(task.dueDate);
             dueDate.setHours(0, 0, 0, 0);
             return dueDate <= today;
@@ -296,9 +345,17 @@ function renderWorkView() {
     sections.forEach(section => {
         const sectionTasks = getTasksByCategory('work', section.id);
         // Always show all sections
-        const sectionEl = createTaskSection(section.label, sectionTasks, 'work');
+        const sectionEl = createTaskSection(section.label, sectionTasks, 'work', section.id);
         container.appendChild(sectionEl);
     });
+
+    // Add "Add Task" button at the bottom
+    const addBtn = document.createElement('div');
+    addBtn.className = 'add-task';
+    addBtn.dataset.type = 'work';
+    addBtn.textContent = '+ Add work task';
+    addBtn.addEventListener('click', () => showAddTaskInput('work', addBtn));
+    container.appendChild(addBtn);
 }
 
 // Render full personal view with sections
@@ -320,19 +377,27 @@ function renderPersonalView() {
     sections.forEach(section => {
         const sectionTasks = getTasksByCategory('personal', section.id);
         // Always show all sections
-        const sectionEl = createTaskSection(section.label, sectionTasks, 'personal');
+        const sectionEl = createTaskSection(section.label, sectionTasks, 'personal', section.id);
         container.appendChild(sectionEl);
     });
+
+    // Add "Add Task" button at the bottom
+    const addBtn = document.createElement('div');
+    addBtn.className = 'add-task';
+    addBtn.dataset.type = 'personal';
+    addBtn.textContent = '+ Add personal task';
+    addBtn.addEventListener('click', () => showAddTaskInput('personal', addBtn));
+    container.appendChild(addBtn);
 }
 
 // Create a task section with header
-function createTaskSection(label, taskList, type) {
+function createTaskSection(label, taskList, type, sectionId = null) {
     const section = document.createElement('div');
     section.className = 'task-section';
 
     section.innerHTML = `
         <div class="task-section-header">${label}</div>
-        <div class="task-list" data-section="${label.toLowerCase().replace(/\s+/g, '-')}"></div>
+        <div class="task-list" data-section="${label.toLowerCase().replace(/\s+/g, '-')}" data-type="${type}" data-category="${sectionId || label.toLowerCase()}"></div>
     `;
 
     const listContainer = section.querySelector('.task-list');
