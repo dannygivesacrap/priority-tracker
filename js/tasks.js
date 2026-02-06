@@ -302,7 +302,7 @@ function getTodayTasks(type) {
         }
 
         return task.category === 'today';
-    });
+    }).sort((a, b) => (a.order || 0) - (b.order || 0)); // Sort by order
 }
 
 // Render tasks to DOM
@@ -662,31 +662,30 @@ let dragState = {
     offsetY: 0
 };
 
-// Initialize drag and drop globally (called once on page load)
-function initGlobalDragAndDrop() {
-    document.addEventListener('mousedown', handleDragHandleMouseDown);
-    document.addEventListener('touchstart', handleDragHandleTouchStart, { passive: false });
-}
+// Set up global drag listeners immediately
+(function initGlobalDragAndDrop() {
+    document.addEventListener('mousedown', function(e) {
+        // Check if click is on a drag handle
+        const handle = e.target.closest('.task-drag-handle');
+        if (!handle) return;
 
-function handleDragHandleMouseDown(e) {
-    const handle = e.target.closest('.task-drag-handle');
-    if (!handle) return;
+        const item = handle.closest('.task-item');
+        if (!item || item.classList.contains('completed')) return;
 
-    const item = handle.closest('.task-item');
-    if (!item || item.classList.contains('completed')) return;
+        console.log('Drag started on:', item.querySelector('.task-title')?.textContent);
+        startDrag(e, item);
+    }, true); // Use capture phase
 
-    startDrag(e, item);
-}
+    document.addEventListener('touchstart', function(e) {
+        const handle = e.target.closest('.task-drag-handle');
+        if (!handle) return;
 
-function handleDragHandleTouchStart(e) {
-    const handle = e.target.closest('.task-drag-handle');
-    if (!handle) return;
+        const item = handle.closest('.task-item');
+        if (!item || item.classList.contains('completed')) return;
 
-    const item = handle.closest('.task-item');
-    if (!item || item.classList.contains('completed')) return;
-
-    startDrag(e, item);
-}
+        startDrag(e, item);
+    }, { passive: false, capture: true });
+})();
 
 // Legacy function - kept for compatibility but no longer needed per-container
 function initTaskDragAndDrop(container) {
