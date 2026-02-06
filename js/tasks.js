@@ -232,10 +232,17 @@ function getTasksByCategory(type, category) {
             }
         }
 
-        // Recurring section shows all recurring tasks that are due today or earlier
+        // Recurring section shows recurring tasks due today (including completed ones from today)
         if (category === 'recurring') {
-            if (!task.recurring || task.completed) return false;
-            // Only show in recurring if due today or no due date
+            if (!task.recurring) return false;
+            // Show completed recurring tasks only if completed today
+            if (task.completed) {
+                if (!task.completedAt) return false;
+                const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt);
+                completedDate.setHours(0, 0, 0, 0);
+                if (completedDate.getTime() !== today.getTime()) return false;
+            }
+            // Only show if due today or earlier (or no due date)
             if (task.dueDate) {
                 const dueDate = new Date(task.dueDate);
                 dueDate.setHours(0, 0, 0, 0);
