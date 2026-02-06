@@ -687,20 +687,26 @@ async function handleDrop(e) {
     const targetId = this.dataset.taskId;
     const type = draggedTask.dataset.type;
 
-    // Get current order
-    const taskList = tasks[type].filter(t => !t.completed);
-    const draggedIndex = taskList.findIndex(t => t.id === draggedId);
-    const targetIndex = taskList.findIndex(t => t.id === targetId);
+    // Get the container to find tasks in this specific list
+    const container = this.closest('.task-list');
+    if (!container) return;
+
+    // Get task IDs in display order from the DOM
+    const taskElements = Array.from(container.querySelectorAll('.task-item:not(.completed)'));
+    const taskIds = taskElements.map(el => el.dataset.taskId);
+
+    const draggedIndex = taskIds.indexOf(draggedId);
+    const targetIndex = taskIds.indexOf(targetId);
 
     if (draggedIndex === -1 || targetIndex === -1) return;
 
-    // Reorder
-    const [removed] = taskList.splice(draggedIndex, 1);
-    taskList.splice(targetIndex, 0, removed);
+    // Reorder the IDs
+    taskIds.splice(draggedIndex, 1);
+    taskIds.splice(targetIndex, 0, draggedId);
 
-    // Update order in Firestore
-    for (let i = 0; i < taskList.length; i++) {
-        await updateTask(taskList[i].id, { order: i });
+    // Update order in Firestore for visible tasks
+    for (let i = 0; i < taskIds.length; i++) {
+        await updateTask(taskIds[i], { order: i });
     }
 
     showToast('Tasks reordered');
