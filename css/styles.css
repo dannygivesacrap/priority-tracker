@@ -1344,7 +1344,155 @@ body {
     background: #f8f9fa;
 }
 
-/* Mobile Priority Cards */
+/* Layout Switcher (temporary for testing) */
+.layout-switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: white;
+    border-radius: 10px;
+}
+
+.layout-switcher span {
+    font-size: 12px;
+    color: #868e96;
+    font-weight: 600;
+}
+
+.layout-switcher button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.layout-switcher button.active {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+/* ===== LAYOUT A: Full-width stacked cards ===== */
+.mobile-priorities-stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mobile-priority-card-full {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.mobile-priority-list-full {
+    padding: 8px 12px;
+}
+
+.mobile-priority-item-full {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f5;
+    font-size: 14px;
+    color: #343a40;
+}
+
+.mobile-priority-item-full:last-child {
+    border-bottom: none;
+}
+
+/* ===== LAYOUT B: Horizontal scrolling rows ===== */
+.mobile-priorities-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mobile-priority-row {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.mobile-priority-row-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    color: white;
+}
+
+.mobile-priority-row-label.indigo { background: #6366f1; }
+.mobile-priority-row-label.green { background: #10b981; }
+.mobile-priority-row-label.orange { background: #f97316; }
+.mobile-priority-row-label.pink { background: #ec4899; }
+.mobile-priority-row-label.purple { background: #8b5cf6; }
+.mobile-priority-row-label.red { background: #ef4444; }
+.mobile-priority-row-label.blue { background: #3b82f6; }
+.mobile-priority-row-label.teal { background: #14b8a6; }
+
+.mobile-priority-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mobile-priority-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 6px 6px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.chip-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+}
+
+.chip-num.indigo { background: #6366f1; }
+.chip-num.green { background: #10b981; }
+.chip-num.orange { background: #f97316; }
+.chip-num.pink { background: #ec4899; }
+.chip-num.purple { background: #8b5cf6; }
+.chip-num.red { background: #ef4444; }
+.chip-num.blue { background: #3b82f6; }
+.chip-num.teal { background: #14b8a6; }
+
+.mobile-priority-empty-inline {
+    color: #adb5bd;
+    font-size: 13px;
+    font-style: italic;
+}
+
+/* ===== LAYOUT C: Compact 2-column grid ===== */
 .mobile-priorities-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

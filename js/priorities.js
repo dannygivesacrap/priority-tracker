@@ -682,38 +682,112 @@ function showPriorityContextMenu(chip, event) {
     setTimeout(() => document.addEventListener('click', closeMenu), 0);
 }
 
-// Render mobile priorities panel - compact card design
+// Mobile priority layout preference (A, B, or C)
+let mobilePriorityLayout = 'A';
+
+// Render mobile priorities panel with layout options
 function renderMobilePriorities() {
     const container = document.getElementById('mobilePriorities');
     if (!container) return;
 
-    let html = '<div class="mobile-priorities-grid">';
+    // Layout switcher for testing
+    let html = `
+        <div class="layout-switcher">
+            <span>Layout:</span>
+            <button onclick="setMobileLayout('A')" class="${mobilePriorityLayout === 'A' ? 'active' : ''}">A</button>
+            <button onclick="setMobileLayout('B')" class="${mobilePriorityLayout === 'B' ? 'active' : ''}">B</button>
+            <button onclick="setMobileLayout('C')" class="${mobilePriorityLayout === 'C' ? 'active' : ''}">C</button>
+        </div>
+    `;
 
-    categories.forEach(cat => {
-        const label = getCategoryLabel(cat);
-        const color = getCategoryColor(cat);
-        const catPriorities = (priorities[cat] || []).sort((a, b) => a.order - b.order);
+    if (mobilePriorityLayout === 'A') {
+        // Layout A: Full-width stacked cards
+        html += '<div class="mobile-priorities-stacked">';
+        categories.forEach(cat => {
+            const label = getCategoryLabel(cat);
+            const color = getCategoryColor(cat);
+            const catPriorities = (priorities[cat] || []).sort((a, b) => a.order - b.order);
 
-        html += `
-            <div class="mobile-priority-card">
-                <div class="mobile-priority-header ${color}">${label}</div>
-                <div class="mobile-priority-list">
-                    ${catPriorities.length === 0
-                        ? '<div class="mobile-priority-empty">No priorities yet</div>'
-                        : catPriorities.map((p, i) => `
-                            <div class="mobile-priority-item">
-                                <span class="mobile-priority-num ${color}">${i + 1}</span>
-                                <span class="mobile-priority-title">${escapeHtml(p.title)}</span>
-                            </div>
-                        `).join('')
-                    }
+            html += `
+                <div class="mobile-priority-card-full">
+                    <div class="mobile-priority-header ${color}">${label}</div>
+                    <div class="mobile-priority-list-full">
+                        ${catPriorities.length === 0
+                            ? '<div class="mobile-priority-empty">No priorities yet</div>'
+                            : catPriorities.map((p, i) => `
+                                <div class="mobile-priority-item-full">
+                                    <span class="mobile-priority-num ${color}">${i + 1}</span>
+                                    <span>${escapeHtml(p.title)}</span>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
+        html += '</div>';
 
-    html += '</div>';
+    } else if (mobilePriorityLayout === 'B') {
+        // Layout B: Horizontal scrolling chips per category
+        html += '<div class="mobile-priorities-rows">';
+        categories.forEach(cat => {
+            const label = getCategoryLabel(cat);
+            const color = getCategoryColor(cat);
+            const catPriorities = (priorities[cat] || []).sort((a, b) => a.order - b.order);
+
+            html += `
+                <div class="mobile-priority-row">
+                    <div class="mobile-priority-row-label ${color}">${label}</div>
+                    <div class="mobile-priority-chips">
+                        ${catPriorities.length === 0
+                            ? '<span class="mobile-priority-empty-inline">None</span>'
+                            : catPriorities.map((p, i) => `
+                                <div class="mobile-priority-chip">
+                                    <span class="chip-num ${color}">${i + 1}</span>
+                                    <span>${escapeHtml(p.title)}</span>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+    } else if (mobilePriorityLayout === 'C') {
+        // Layout C: Compact 2-column grid (original)
+        html += '<div class="mobile-priorities-grid">';
+        categories.forEach(cat => {
+            const label = getCategoryLabel(cat);
+            const color = getCategoryColor(cat);
+            const catPriorities = (priorities[cat] || []).sort((a, b) => a.order - b.order);
+
+            html += `
+                <div class="mobile-priority-card">
+                    <div class="mobile-priority-header ${color}">${label}</div>
+                    <div class="mobile-priority-list">
+                        ${catPriorities.length === 0
+                            ? '<div class="mobile-priority-empty">No priorities</div>'
+                            : catPriorities.map((p, i) => `
+                                <div class="mobile-priority-item">
+                                    <span class="mobile-priority-num ${color}">${i + 1}</span>
+                                    <span class="mobile-priority-title">${escapeHtml(p.title)}</span>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+
     container.innerHTML = html;
+}
+
+function setMobileLayout(layout) {
+    mobilePriorityLayout = layout;
+    renderMobilePriorities();
 }
 
 // Helper: escape HTML
