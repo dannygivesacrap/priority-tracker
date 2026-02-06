@@ -682,32 +682,38 @@ function showPriorityContextMenu(chip, event) {
     setTimeout(() => document.addEventListener('click', closeMenu), 0);
 }
 
-// Render mobile priorities panel
+// Render mobile priorities panel - compact card design
 function renderMobilePriorities() {
     const container = document.getElementById('mobilePriorities');
     if (!container) return;
 
-    let html = '<div class="priorities-strip" style="background: transparent; border: none; padding: 0;">';
+    let html = '<div class="mobile-priorities-grid">';
 
     categories.forEach(cat => {
         const label = getCategoryLabel(cat);
+        const color = getCategoryColor(cat);
+        const catPriorities = (priorities[cat] || []).sort((a, b) => a.order - b.order);
+
         html += `
-            <div class="priorities-row">
-                <span class="priorities-label">${label}</span>
-                <div class="priorities-list" id="mobile${cat}Priorities"></div>
+            <div class="mobile-priority-card">
+                <div class="mobile-priority-header ${color}">${label}</div>
+                <div class="mobile-priority-list">
+                    ${catPriorities.length === 0
+                        ? '<div class="mobile-priority-empty">No priorities yet</div>'
+                        : catPriorities.map((p, i) => `
+                            <div class="mobile-priority-item">
+                                <span class="mobile-priority-num ${color}">${i + 1}</span>
+                                <span class="mobile-priority-title">${escapeHtml(p.title)}</span>
+                            </div>
+                        `).join('')
+                    }
+                </div>
             </div>
         `;
     });
 
     html += '</div>';
     container.innerHTML = html;
-
-    categories.forEach(cat => {
-        const catContainer = document.getElementById(`mobile${cat}Priorities`);
-        if (catContainer) {
-            renderPriorityList(catContainer, priorities[cat] || [], cat);
-        }
-    });
 }
 
 // Helper: escape HTML

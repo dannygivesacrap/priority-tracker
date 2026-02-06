@@ -1344,6 +1344,77 @@ body {
     background: #f8f9fa;
 }
 
+/* Mobile Priority Cards */
+.mobile-priorities-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.mobile-priority-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.mobile-priority-header {
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: white;
+}
+
+.mobile-priority-header.indigo { background: #6366f1; }
+.mobile-priority-header.green { background: #10b981; }
+.mobile-priority-header.orange { background: #f97316; }
+.mobile-priority-header.pink { background: #ec4899; }
+.mobile-priority-header.purple { background: #8b5cf6; }
+.mobile-priority-header.red { background: #ef4444; }
+.mobile-priority-header.blue { background: #3b82f6; }
+.mobile-priority-header.teal { background: #14b8a6; }
+
+.mobile-priority-list {
+    padding: 8px;
+}
+
+.mobile-priority-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+}
+
+.mobile-priority-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+}
+
+.mobile-priority-title {
+    font-size: 13px;
+    color: #343a40;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mobile-priority-empty {
+    padding: 12px 4px;
+    color: #adb5bd;
+    font-size: 12px;
+    text-align: center;
+}
+
 /* Mobile Task Styling */
 @media (max-width: 768px) {
     .task-item {
