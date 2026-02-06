@@ -344,32 +344,118 @@ function showToast(message) {
 
 // Mobile navigation
 function initMobileNav() {
-    const panels = document.getElementById('mobilePanels');
-    const dots = document.querySelectorAll('.mobile-nav-dot');
+    // Tab navigation
+    const tabs = document.querySelectorAll('.mobile-tab');
+    const panels = document.querySelectorAll('.mobile-panel');
 
-    if (!panels || dots.length === 0) return;
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const panelId = tab.dataset.panel;
 
-    // Update active dot on scroll
-    panels.addEventListener('scroll', () => {
-        const scrollLeft = panels.scrollLeft;
-        const panelWidth = panels.offsetWidth / 3;
-        const activeIndex = Math.round(scrollLeft / panelWidth);
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
 
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === activeIndex);
+            // Show corresponding panel
+            panels.forEach(p => p.classList.remove('active'));
+            const targetPanel = document.getElementById(`mobile${panelId.charAt(0).toUpperCase() + panelId.slice(1)}Panel`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
         });
     });
 
-    // Click dots to navigate
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-            const panelWidth = panels.offsetWidth / 3;
-            panels.scrollTo({
-                left: panelWidth * index,
-                behavior: 'smooth'
-            });
+    // Menu toggle
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const menuOverlay = document.getElementById('mobileMenuOverlay');
+    const menuClose = document.getElementById('mobileMenuClose');
+
+    if (menuBtn && menuOverlay) {
+        menuBtn.addEventListener('click', () => {
+            menuOverlay.classList.add('active');
+        });
+
+        menuClose?.addEventListener('click', () => {
+            menuOverlay.classList.remove('active');
+        });
+
+        menuOverlay.addEventListener('click', (e) => {
+            if (e.target === menuOverlay) {
+                menuOverlay.classList.remove('active');
+            }
+        });
+    }
+
+    // Mobile sign out
+    const mobileSignOut = document.getElementById('mobileSignOut');
+    if (mobileSignOut) {
+        mobileSignOut.addEventListener('click', () => {
+            signOut();
+        });
+    }
+
+    // Mobile add task buttons
+    document.querySelectorAll('.mobile-add-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
+            showMobileAddTask(type, btn);
         });
     });
+}
+
+// Show mobile add task input
+function showMobileAddTask(type, button) {
+    // Check if already showing input
+    const existingInput = button.previousElementSibling?.querySelector('.mobile-task-input');
+    if (existingInput) return;
+
+    const container = button.previousElementSibling;
+    if (!container) return;
+
+    const inputEl = document.createElement('div');
+    inputEl.className = 'task-item mobile-task-input';
+    inputEl.innerHTML = `
+        <div class="task-checkbox" style="visibility: hidden;"></div>
+        <div class="task-content" style="flex: 1;">
+            <input type="text" class="task-title-input" placeholder="What needs to be done?" style="width: 100%; font-size: 15px; padding: 8px 0;" autofocus />
+        </div>
+    `;
+
+    container.appendChild(inputEl);
+
+    const input = inputEl.querySelector('input');
+    input.focus();
+
+    const saveTask = async () => {
+        const title = input.value.trim();
+        inputEl.remove();
+
+        if (title) {
+            await addTask(type, title);
+        }
+    };
+
+    input.addEventListener('blur', saveTask);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            input.blur();
+        } else if (e.key === 'Escape') {
+            inputEl.remove();
+        }
+    });
+}
+
+// Update mobile user info
+function updateMobileUserInfo(user) {
+    const avatar = document.getElementById('mobileUserAvatar');
+    const name = document.getElementById('mobileUserName');
+
+    if (avatar && user?.photoURL) {
+        avatar.src = user.photoURL;
+    }
+    if (name && user?.displayName) {
+        name.textContent = user.displayName;
+    }
 }
 
 // Initialize the app

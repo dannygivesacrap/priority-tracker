@@ -820,44 +820,17 @@ async function onDragEnd(e) {
 
 // Render mobile tasks
 function renderMobileTasks() {
-    const container = document.getElementById('mobileDashboardTasks');
-    if (!container) return;
+    const workContainer = document.getElementById('mobileWorkTasks');
+    const personalContainer = document.getElementById('mobilePersonalTasks');
 
-    const allTodayTasks = [...getTodayTasks('work'), ...getTodayTasks('personal')];
-    container.innerHTML = '';
-
-    if (allTodayTasks.length === 0) {
-        container.innerHTML = '<div class="task-list empty">No tasks for today</div>';
-        return;
+    if (workContainer) {
+        const workTasks = getTodayTasks('work');
+        renderTaskList(workContainer, workTasks, 'work');
     }
 
-    // Work tasks
-    const workTasks = getTodayTasks('work');
-    if (workTasks.length > 0) {
-        const workSection = document.createElement('div');
-        workSection.innerHTML = `
-            <div class="section-header">
-                <h3>Work</h3>
-            </div>
-            <div class="task-list" id="mobileWorkTasks"></div>
-        `;
-        container.appendChild(workSection);
-        renderTaskList(workSection.querySelector('.task-list'), workTasks, 'work');
-    }
-
-    // Personal tasks
-    const personalTasks = getTodayTasks('personal');
-    if (personalTasks.length > 0) {
-        const personalSection = document.createElement('div');
-        personalSection.style.marginTop = '20px';
-        personalSection.innerHTML = `
-            <div class="section-header">
-                <h3>Personal</h3>
-            </div>
-            <div class="task-list" id="mobilePersonalTasks"></div>
-        `;
-        container.appendChild(personalSection);
-        renderTaskList(personalSection.querySelector('.task-list'), personalTasks, 'personal');
+    if (personalContainer) {
+        const personalTasks = getTodayTasks('personal');
+        renderTaskList(personalContainer, personalTasks, 'personal');
     }
 }
 

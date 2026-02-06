@@ -166,46 +166,69 @@
 
     <!-- Mobile Interface -->
     <div class="mobile-container">
-        <div class="mobile-panels" id="mobilePanels">
-            <!-- Panel 1: Priorities -->
+        <!-- Mobile Header -->
+        <header class="mobile-header">
+            <h1>Priority Tracker</h1>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        </header>
+
+        <!-- Mobile Tab Navigation -->
+        <nav class="mobile-tabs">
+            <button class="mobile-tab active" data-panel="tasks">Tasks</button>
+            <button class="mobile-tab" data-panel="priorities">Priorities</button>
+            <button class="mobile-tab" data-panel="calendar">Calendar</button>
+        </nav>
+
+        <!-- Mobile Content Panels -->
+        <div class="mobile-content">
+            <!-- Tasks Panel -->
+            <div class="mobile-panel active" id="mobileTasksPanel">
+                <div class="mobile-section">
+                    <h3>Work</h3>
+                    <div class="task-list" id="mobileWorkTasks">
+                        <div class="loading">Loading tasks</div>
+                    </div>
+                    <button class="mobile-add-btn" data-type="work">+ Add work task</button>
+                </div>
+                <div class="mobile-section">
+                    <h3>Personal</h3>
+                    <div class="task-list" id="mobilePersonalTasks">
+                        <div class="loading">Loading tasks</div>
+                    </div>
+                    <button class="mobile-add-btn" data-type="personal">+ Add personal task</button>
+                </div>
+            </div>
+
+            <!-- Priorities Panel -->
             <div class="mobile-panel" id="mobilePrioritiesPanel">
-                <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Priorities</h2>
                 <div id="mobilePriorities">
                     <div class="loading">Loading priorities</div>
                 </div>
             </div>
 
-            <!-- Panel 2: Dashboard -->
-            <div class="mobile-panel" id="mobileDashboardPanel">
-                <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 20px;">Today</h2>
-                <div id="mobileDashboardTasks">
-                    <div class="loading">Loading tasks</div>
-                </div>
-                <div class="add-task" data-type="work" style="margin-top: 16px;">+ Add task</div>
-            </div>
-
-            <!-- Panel 3: Calendar -->
+            <!-- Calendar Panel -->
             <div class="mobile-panel" id="mobileCalendarPanel">
-                <div class="calendar" style="border: none; box-shadow: none;">
-                    <div class="calendar-header">
-                        <h4>📅 Calendar</h4>
-                        <span>Today</span>
-                    </div>
-                    <div class="calendar-events" id="mobileCalendarEvents">
-                        <div class="loading">Loading calendar</div>
-                    </div>
+                <div class="calendar-header" style="border-radius: 12px 12px 0 0;">
+                    <h4>📅 Calendar</h4>
+                    <span id="mobileCalendarDate">Today</span>
+                </div>
+                <div class="calendar-events" id="mobileCalendarEvents" style="border: 1px solid #e9ecef; border-top: none; border-radius: 0 0 12px 12px;">
+                    <div class="loading">Loading calendar</div>
                 </div>
             </div>
         </div>
 
-        <!-- Mobile Navigation -->
-        <nav class="mobile-nav">
-            <span class="mobile-nav-label">Priorities</span>
-            <div class="mobile-nav-dot active"></div>
-            <div class="mobile-nav-dot"></div>
-            <div class="mobile-nav-dot"></div>
-            <span class="mobile-nav-label">Calendar</span>
-        </nav>
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+            <div class="mobile-menu">
+                <button class="mobile-menu-close" id="mobileMenuClose">✕</button>
+                <div class="mobile-menu-user">
+                    <img src="" alt="User" id="mobileUserAvatar" class="user-avatar">
+                    <span id="mobileUserName">User</span>
+                </div>
+                <button class="mobile-menu-item" id="mobileSignOut">Sign Out</button>
+            </div>
+        </div>
     </div>
 
     <!-- Celebration Overlay -->

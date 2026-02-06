@@ -125,6 +125,11 @@ function showApp() {
         }
     }
 
+    // Update mobile user info
+    if (typeof updateMobileUserInfo === 'function') {
+        updateMobileUserInfo(currentUser);
+    }
+
     // Update greeting with user name
     const greetingEl = document.querySelector('.greeting h2');
     if (greetingEl && currentUser) {
