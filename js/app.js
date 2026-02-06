@@ -397,6 +397,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sign out button
     document.getElementById('signOutBtn')?.addEventListener('click', signOut);
 
+    // Initialize global drag and drop (event delegation)
+    if (typeof initGlobalDragAndDrop === 'function') {
+        initGlobalDragAndDrop();
+    }
+
     // Initialize add task handlers after a short delay (to ensure DOM is ready)
     setTimeout(initAddTaskHandlers, 100);
 });

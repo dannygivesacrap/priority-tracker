@@ -652,7 +652,7 @@ function showTaskDropdown(taskItem, type) {
     setTimeout(() => document.addEventListener('click', closeDropdown), 0);
 }
 
-// Drag and drop for tasks - complete rewrite
+// Drag and drop for tasks - using event delegation
 let dragState = {
     dragging: false,
     element: null,
@@ -662,18 +662,35 @@ let dragState = {
     offsetY: 0
 };
 
+// Initialize drag and drop globally (called once on page load)
+function initGlobalDragAndDrop() {
+    document.addEventListener('mousedown', handleDragHandleMouseDown);
+    document.addEventListener('touchstart', handleDragHandleTouchStart, { passive: false });
+}
+
+function handleDragHandleMouseDown(e) {
+    const handle = e.target.closest('.task-drag-handle');
+    if (!handle) return;
+
+    const item = handle.closest('.task-item');
+    if (!item || item.classList.contains('completed')) return;
+
+    startDrag(e, item);
+}
+
+function handleDragHandleTouchStart(e) {
+    const handle = e.target.closest('.task-drag-handle');
+    if (!handle) return;
+
+    const item = handle.closest('.task-item');
+    if (!item || item.classList.contains('completed')) return;
+
+    startDrag(e, item);
+}
+
+// Legacy function - kept for compatibility but no longer needed per-container
 function initTaskDragAndDrop(container) {
-    container.querySelectorAll('.task-item:not(.completed)').forEach(item => {
-        const handle = item.querySelector('.task-drag-handle');
-        if (!handle) return;
-
-        // Remove old listeners by cloning
-        const newHandle = handle.cloneNode(true);
-        handle.parentNode.replaceChild(newHandle, handle);
-
-        newHandle.addEventListener('mousedown', (e) => startDrag(e, item));
-        newHandle.addEventListener('touchstart', (e) => startDrag(e, item), { passive: false });
-    });
+    // Drag is now handled globally via event delegation
 }
 
 function startDrag(e, item) {
