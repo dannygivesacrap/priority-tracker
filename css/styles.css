@@ -505,12 +505,51 @@ body {
     background: #f8f9fa;
 }
 
-.task-item.completed .task-actions {
-    display: none;
+.task-item.completed:hover {
+    opacity: 0.7;
 }
 
-.task-item.completed .task-drag-handle {
-    visibility: hidden;
+.task-item.completed:hover .task-delete-btn {
+    opacity: 1;
+}
+
+/* Delete button for completed tasks */
+.task-delete-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: #adb5bd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-delete-btn:hover {
+    background: #fee2e2;
+    color: #dc3545;
+}
+
+/* Drag placeholder */
+.task-placeholder {
+    background: #e9ecef;
+    border: 2px dashed #6366f1;
+    border-radius: 8px;
+    margin: 4px 0;
+}
+
+/* Dragging state */
+.task-item.dragging {
+    opacity: 0.9;
+    background: white;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    border: 1px solid #6366f1;
 }
 
 .task-checkbox {
@@ -653,14 +692,7 @@ body {
 }
 
 /* ===== DRAG AND DROP ===== */
-.task-item.dragging {
-    opacity: 0.5;
-    background: #e9ecef;
-}
-
-.task-item.drag-over {
-    border-top: 2px solid #6366f1;
-}
+/* Old drag styles - replaced */
 
 .task-drag-handle {
     cursor: grab;

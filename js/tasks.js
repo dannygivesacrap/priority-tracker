@@ -460,6 +460,16 @@ function renderTaskList(container, taskList, type) {
             }
         });
     });
+
+    // Delete button for completed tasks
+    container.querySelectorAll('.task-delete-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const taskItem = btn.closest('.task-item');
+            const taskId = taskItem.dataset.taskId;
+            await deleteTask(taskId);
+        });
+    });
 }
 
 // Create HTML for a single task
@@ -469,9 +479,17 @@ function createTaskHTML(task, type) {
     const priorityTag = task.priorityId ? `<span class="task-tag">${getPriorityName(task.priorityId, type)}</span>` : '';
     const dueMeta = task.dueDate && !isToday(task.dueDate) ? `<span class="task-meta">\ud83d\udcc5 ${formatDate(task.dueDate)}</span>` : '';
 
+    // Different actions for completed vs active tasks
+    const actions = task.completed
+        ? `<button class="task-delete-btn" data-action="delete" title="Delete">\u2715</button>`
+        : `<div class="task-actions">
+                <button class="task-action-btn" data-action="focus" title="Focus">\u23f1</button>
+                <button class="task-action-btn" data-action="more" title="More">\u22ef</button>
+           </div>`;
+
     return `
-        <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}" data-type="${type}" data-order="${task.order || 0}" draggable="true">
-            <span class="task-drag-handle">\u2630</span>
+        <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}" data-type="${type}" data-order="${task.order || 0}">
+            ${task.completed ? '' : '<span class="task-drag-handle">\u2630</span>'}
             <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
             <div class="task-content">
                 <span class="task-title ${task.completed ? 'completed' : ''}">${escapeHtml(task.title)}</span>
@@ -479,10 +497,7 @@ function createTaskHTML(task, type) {
                 ${priorityTag}
                 ${dueMeta}
             </div>
-            <div class="task-actions">
-                <button class="task-action-btn" data-action="focus" title="Focus">\u23f1</button>
-                <button class="task-action-btn" data-action="more" title="More">\u22ef</button>
-            </div>
+            ${actions}
         </div>
     `;
 }
@@ -637,79 +652,147 @@ function showTaskDropdown(taskItem, type) {
     setTimeout(() => document.addEventListener('click', closeDropdown), 0);
 }
 
-// Drag and drop for tasks
-let draggedTask = null;
+// Drag and drop for tasks - complete rewrite
+let dragState = {
+    dragging: false,
+    element: null,
+    placeholder: null,
+    container: null,
+    startY: 0,
+    offsetY: 0
+};
 
 function initTaskDragAndDrop(container) {
-    container.querySelectorAll('.task-item[draggable="true"]').forEach(item => {
-        item.addEventListener('dragstart', handleDragStart);
-        item.addEventListener('dragend', handleDragEnd);
-        item.addEventListener('dragover', handleDragOver);
-        item.addEventListener('dragleave', handleDragLeave);
-        item.addEventListener('drop', handleDrop);
+    container.querySelectorAll('.task-item:not(.completed)').forEach(item => {
+        const handle = item.querySelector('.task-drag-handle');
+        if (!handle) return;
+
+        // Remove old listeners by cloning
+        const newHandle = handle.cloneNode(true);
+        handle.parentNode.replaceChild(newHandle, handle);
+
+        newHandle.addEventListener('mousedown', (e) => startDrag(e, item));
+        newHandle.addEventListener('touchstart', (e) => startDrag(e, item), { passive: false });
     });
 }
 
-function handleDragStart(e) {
-    draggedTask = this;
-    this.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-}
-
-function handleDragEnd(e) {
-    this.classList.remove('dragging');
-    document.querySelectorAll('.task-item').forEach(item => {
-        item.classList.remove('drag-over');
-    });
-    draggedTask = null;
-}
-
-function handleDragOver(e) {
+function startDrag(e, item) {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    e.stopPropagation();
 
-    if (this !== draggedTask && !this.classList.contains('dragging')) {
-        this.classList.add('drag-over');
-    }
-}
-
-function handleDragLeave(e) {
-    this.classList.remove('drag-over');
-}
-
-async function handleDrop(e) {
-    e.preventDefault();
-    this.classList.remove('drag-over');
-
-    if (!draggedTask || this === draggedTask) return;
-
-    const draggedId = draggedTask.dataset.taskId;
-    const targetId = this.dataset.taskId;
-    const type = draggedTask.dataset.type;
-
-    // Get the container to find tasks in this specific list
-    const container = this.closest('.task-list');
+    const container = item.closest('.task-list');
     if (!container) return;
 
-    // Get task IDs in display order from the DOM
-    const taskElements = Array.from(container.querySelectorAll('.task-item:not(.completed)'));
-    const taskIds = taskElements.map(el => el.dataset.taskId);
+    // Get initial position
+    const rect = item.getBoundingClientRect();
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    const draggedIndex = taskIds.indexOf(draggedId);
-    const targetIndex = taskIds.indexOf(targetId);
+    // Create placeholder
+    const placeholder = document.createElement('div');
+    placeholder.className = 'task-placeholder';
+    placeholder.style.height = rect.height + 'px';
 
-    if (draggedIndex === -1 || targetIndex === -1) return;
+    // Set up drag state
+    dragState = {
+        dragging: true,
+        element: item,
+        placeholder: placeholder,
+        container: container,
+        startY: clientY,
+        offsetY: clientY - rect.top,
+        initialIndex: Array.from(container.children).indexOf(item)
+    };
 
-    // Reorder the IDs
-    taskIds.splice(draggedIndex, 1);
-    taskIds.splice(targetIndex, 0, draggedId);
+    // Style the dragged element
+    item.classList.add('dragging');
+    item.style.position = 'fixed';
+    item.style.width = rect.width + 'px';
+    item.style.left = rect.left + 'px';
+    item.style.top = rect.top + 'px';
+    item.style.zIndex = '1000';
 
-    // Update order in Firestore for visible tasks
-    for (let i = 0; i < taskIds.length; i++) {
-        await updateTask(taskIds[i], { order: i });
+    // Insert placeholder
+    container.insertBefore(placeholder, item);
+    document.body.appendChild(item);
+
+    // Add move/end listeners
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
+    document.addEventListener('touchmove', onDragMove, { passive: false });
+    document.addEventListener('touchend', onDragEnd);
+}
+
+function onDragMove(e) {
+    if (!dragState.dragging) return;
+    e.preventDefault();
+
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const newTop = clientY - dragState.offsetY;
+
+    // Move the dragged element
+    dragState.element.style.top = newTop + 'px';
+
+    // Find the element we're hovering over
+    const siblings = Array.from(dragState.container.querySelectorAll('.task-item:not(.dragging), .task-placeholder'));
+
+    for (let i = 0; i < siblings.length; i++) {
+        const sibling = siblings[i];
+        const rect = sibling.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+
+        if (clientY < midpoint) {
+            if (sibling !== dragState.placeholder) {
+                dragState.container.insertBefore(dragState.placeholder, sibling);
+            }
+            return;
+        }
     }
 
-    showToast('Tasks reordered');
+    // If we're past all items, append at the end
+    const lastItem = siblings[siblings.length - 1];
+    if (lastItem && lastItem !== dragState.placeholder) {
+        dragState.container.appendChild(dragState.placeholder);
+    }
+}
+
+async function onDragEnd(e) {
+    if (!dragState.dragging) return;
+
+    // Remove listeners
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+    document.removeEventListener('touchmove', onDragMove);
+    document.removeEventListener('touchend', onDragEnd);
+
+    const { element, placeholder, container } = dragState;
+
+    // Reset element styles
+    element.classList.remove('dragging');
+    element.style.position = '';
+    element.style.width = '';
+    element.style.left = '';
+    element.style.top = '';
+    element.style.zIndex = '';
+
+    // Insert element at placeholder position
+    container.insertBefore(element, placeholder);
+    placeholder.remove();
+
+    // Get new order and save
+    const taskElements = Array.from(container.querySelectorAll('.task-item:not(.task-placeholder)'));
+    const newIndex = taskElements.indexOf(element);
+
+    if (newIndex !== dragState.initialIndex) {
+        // Save new order to Firestore
+        const updates = taskElements.map((el, i) => {
+            return updateTask(el.dataset.taskId, { order: i });
+        });
+        await Promise.all(updates);
+        showToast('Tasks reordered');
+    }
+
+    // Reset state
+    dragState = { dragging: false, element: null, placeholder: null, container: null };
 }
 
 // Render mobile tasks
