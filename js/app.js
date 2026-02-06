@@ -488,9 +488,93 @@ document.addEventListener('DOMContentLoaded', () => {
         initGlobalDragAndDrop();
     }
 
+    // Initialize FAB (Floating Action Button)
+    initFAB();
+
+    // Initialize dark mode
+    initDarkMode();
+
     // Initialize add task handlers after a short delay (to ensure DOM is ready)
     setTimeout(initAddTaskHandlers, 100);
 });
+
+// Floating Action Button
+function initFAB() {
+    const fab = document.getElementById('fabButton');
+    const fabMenu = document.getElementById('fabMenu');
+
+    if (!fab || !fabMenu) return;
+
+    fab.addEventListener('click', () => {
+        fab.classList.toggle('active');
+        fabMenu.classList.toggle('active');
+    });
+
+    // Close FAB menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!fab.contains(e.target) && !fabMenu.contains(e.target)) {
+            fab.classList.remove('active');
+            fabMenu.classList.remove('active');
+        }
+    });
+
+    // FAB options
+    fabMenu.querySelectorAll('.fab-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const type = option.dataset.type;
+            fab.classList.remove('active');
+            fabMenu.classList.remove('active');
+            showQuickAddTask(type);
+        });
+    });
+}
+
+// Quick add task from FAB
+function showQuickAddTask(type) {
+    const title = prompt(`Add ${type} task:`);
+    if (title && title.trim()) {
+        addTask(type, title.trim());
+    }
+}
+
+// Dark Mode
+function initDarkMode() {
+    // Check saved preference
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) {
+        document.body.classList.add('dark-mode');
+        updateDarkModeIcons(true);
+    }
+
+    // Desktop toggle
+    const desktopToggle = document.getElementById('darkModeToggle');
+    if (desktopToggle) {
+        desktopToggle.addEventListener('click', toggleDarkMode);
+    }
+
+    // Mobile toggle
+    const mobileToggle = document.getElementById('mobileDarkMode');
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', () => {
+            toggleDarkMode();
+            // Close mobile menu
+            document.getElementById('mobileMenuOverlay')?.classList.remove('active');
+        });
+    }
+}
+
+function toggleDarkMode() {
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', isDark);
+    updateDarkModeIcons(isDark);
+}
+
+function updateDarkModeIcons(isDark) {
+    const icons = document.querySelectorAll('.dark-mode-icon');
+    icons.forEach(icon => {
+        icon.textContent = isDark ? '☀️' : '🌙';
+    });
+}
 
 // Re-initialize add task handlers when tasks render
 // This runs after all scripts are loaded

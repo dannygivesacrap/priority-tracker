@@ -55,6 +55,11 @@
 
             <div class="sidebar-divider"></div>
 
+            <button class="sidebar-item dark-mode-toggle" id="darkModeToggle" title="Toggle dark mode">
+                <span class="dark-mode-icon">🌙</span>
+                <span class="sidebar-item-label">Dark Mode</span>
+            </button>
+
             <img class="user-avatar" id="userAvatar" src="" alt="User" style="display: none;" onclick="signOut()" title="Sign out">
         </nav>
 
@@ -226,9 +231,21 @@
                     <img src="" alt="User" id="mobileUserAvatar" class="user-avatar">
                     <span id="mobileUserName">User</span>
                 </div>
+                <button class="mobile-menu-item" id="mobileDarkMode">
+                    <span class="dark-mode-icon">🌙</span> Dark Mode
+                </button>
                 <button class="mobile-menu-item" id="mobileSignOut">Sign Out</button>
             </div>
         </div>
+    </div>
+
+    <!-- Floating Action Button (Add Task) -->
+    <button class="fab" id="fabButton" title="Add Task">+</button>
+
+    <!-- FAB Menu -->
+    <div class="fab-menu" id="fabMenu">
+        <button class="fab-option" data-type="work">💼 Work Task</button>
+        <button class="fab-option" data-type="personal">🏠 Personal Task</button>
     </div>
 
     <!-- Celebration Overlay -->
