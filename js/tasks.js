@@ -26,6 +26,7 @@ function loadTasks() {
                     id: doc.id,
                     ...doc.data()
                 }));
+                resetRecurringTasks(type);
                 renderTasks();
             }, error => {
                 console.error(`Error loading ${type} tasks:`, error);
@@ -92,13 +93,6 @@ async function completeTask(taskId, type) {
             completedAt: newCompleted ? firebase.firestore.FieldValue.serverTimestamp() : null
         });
 
-        if (newCompleted) {
-            // Handle recurring task - create next occurrence
-            if (task.recurring) {
-                await createNextRecurrence(task);
-            }
-        }
-
         return newCompleted;
     } catch (error) {
         console.error('Error completing task:', error);
@@ -106,51 +100,55 @@ async function completeTask(taskId, type) {
     }
 }
 
-// Create next occurrence of recurring task (silently, no toast)
-async function createNextRecurrence(task) {
-    const nextDate = calculateNextRecurrence(task.recurring, task.dueDate);
-    const userDoc = getUserDoc();
+// Reset completed recurring tasks whose next recurrence date has arrived.
+// Instead of creating duplicate tasks, recurring tasks stay as a single document
+// and get flipped back to incomplete when it's time to recur.
+function resetRecurringTasks(type) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const newTask = {
-        title: task.title,
-        type: task.type,
-        category: 'today',
-        dueDate: nextDate,
-        recurring: task.recurring,
-        recurringPattern: task.recurringPattern,
-        priorityId: task.priorityId || null,
-        completed: false,
-        completedAt: null,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
+    tasks[type].forEach(task => {
+        if (!task.recurring || !task.completed || !task.completedAt) return;
 
-    try {
-        await userDoc.collection('tasks').add(newTask);
-        // No toast - silently create next occurrence
-    } catch (error) {
-        console.error('Error creating next recurrence:', error);
-    }
-}
+        const completedAt = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt);
+        completedAt.setHours(0, 0, 0, 0);
 
-// Calculate next recurrence date
-function calculateNextRecurrence(pattern, currentDate) {
-    const date = currentDate ? new Date(currentDate) : new Date();
+        // If completed today, leave it as done until the next recurrence
+        if (completedAt.getTime() === today.getTime()) return;
 
-    switch (pattern) {
-        case 'daily':
-            date.setDate(date.getDate() + 1);
-            break;
-        case 'weekly':
-            date.setDate(date.getDate() + 7);
-            break;
-        case 'monthly':
-            date.setMonth(date.getMonth() + 1);
-            break;
-        default:
-            date.setDate(date.getDate() + 1);
-    }
+        // Calculate the next recurrence date from when it was completed
+        const nextRecurrence = new Date(completedAt);
+        switch (task.recurring) {
+            case 'daily':
+                nextRecurrence.setDate(nextRecurrence.getDate() + 1);
+                break;
+            case 'weekdays':
+                nextRecurrence.setDate(nextRecurrence.getDate() + 1);
+                while (nextRecurrence.getDay() === 0 || nextRecurrence.getDay() === 6) {
+                    nextRecurrence.setDate(nextRecurrence.getDate() + 1);
+                }
+                break;
+            case 'weekly':
+                nextRecurrence.setDate(nextRecurrence.getDate() + 7);
+                break;
+            case 'monthly':
+                nextRecurrence.setMonth(nextRecurrence.getMonth() + 1);
+                break;
+            default:
+                nextRecurrence.setDate(nextRecurrence.getDate() + 1);
+        }
 
-    return date.toISOString().split('T')[0];
+        if (nextRecurrence <= today) {
+            // Update local state immediately so the render is correct
+            task.completed = false;
+            task.completedAt = null;
+            // Persist the reset to Firestore (triggers another snapshot, but no-op since already reset)
+            updateTask(task.id, {
+                completed: false,
+                completedAt: null
+            });
+        }
+    });
 }
 
 // Delete a task
