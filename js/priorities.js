@@ -138,6 +138,29 @@ async function deletePriority(type, priorityId) {
     showToast('Priority removed');
 }
 
+// Complete/close a priority (records it for analytics, then removes it)
+async function completePriority(type, priorityId) {
+    const priority = (priorities[type] || []).find(p => p.id === priorityId);
+    if (!priority) return;
+
+    const userDoc = getUserDoc();
+
+    // Record in completedPriorities collection
+    await userDoc.collection('completedPriorities').add({
+        title: priority.title,
+        category: type,
+        originalId: priorityId,
+        completedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Remove from active priorities
+    priorities[type] = priorities[type].filter(p => p.id !== priorityId);
+    priorities[type].forEach((p, i) => p.order = i);
+    await savePriorities(type);
+
+    showToast('Priority completed!');
+}
+
 // Reorder priorities
 async function reorderPriorities(type, fromIndex, toIndex) {
     const [removed] = priorities[type].splice(fromIndex, 1);
@@ -337,6 +360,7 @@ function renderPrioritiesManager() {
                             <span class="priority-item-title">${escapeHtml(p.title)}</span>
                             <div class="priority-item-actions">
                                 <button onclick="editPriorityInManager('${cat}', '${p.id}')" title="Edit">\u270f\ufe0f</button>
+                                <button class="complete" onclick="completePriority('${cat}', '${p.id}')" title="Mark Complete">\u2705</button>
                                 <button class="delete" onclick="deletePriority('${cat}', '${p.id}')" title="Delete">\u2715</button>
                             </div>
                         </div>
@@ -654,6 +678,7 @@ function showPriorityContextMenu(chip, event) {
     menu.style.top = event.clientY + 'px';
     menu.innerHTML = `
         <div class="dropdown-item" data-action="edit">\u270f\ufe0f Edit</div>
+        <div class="dropdown-item" data-action="complete">\u2705 Mark Complete</div>
         <div class="dropdown-divider"></div>
         <div class="dropdown-item danger" data-action="delete">\ud83d\uddd1 Delete</div>
     `;
@@ -663,6 +688,11 @@ function showPriorityContextMenu(chip, event) {
     menu.querySelector('[data-action="edit"]').addEventListener('click', () => {
         menu.remove();
         startEditingPriority(chip);
+    });
+
+    menu.querySelector('[data-action="complete"]').addEventListener('click', async () => {
+        menu.remove();
+        await completePriority(type, priorityId);
     });
 
     menu.querySelector('[data-action="delete"]').addEventListener('click', async () => {

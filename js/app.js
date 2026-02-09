@@ -35,6 +35,7 @@ const toastMessages = [
 async function loadAllData() {
     loadTasks();
     loadPriorities();
+    loadAnalytics();
 
     // Check greeting status
     checkGreeting();
