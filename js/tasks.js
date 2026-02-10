@@ -278,7 +278,11 @@ function getTasksByCategory(type, category) {
 
         // No dueDate - use task.category
         return task.category === category;
-    }).sort((a, b) => (a.order || 0) - (b.order || 0));
+    }).sort((a, b) => {
+        // Uncompleted tasks first, completed tasks below
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        return (a.order || 0) - (b.order || 0);
+    });
 }
 
 // Get today's tasks (for dashboard) - includes today's completed tasks
@@ -306,7 +310,11 @@ function getTodayTasks(type) {
         }
 
         return task.category === 'today';
-    }).sort((a, b) => (a.order || 0) - (b.order || 0)); // Sort by order
+    }).sort((a, b) => {
+        // Uncompleted tasks first, completed tasks below
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        return (a.order || 0) - (b.order || 0);
+    });
 }
 
 // Render tasks to DOM
