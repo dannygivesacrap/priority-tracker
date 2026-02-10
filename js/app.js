@@ -35,6 +35,7 @@ const toastMessages = [
 async function loadAllData() {
     loadTasks();
     loadPriorities();
+    loadAnalytics();
 
     // Check greeting status
     checkGreeting();
@@ -134,43 +135,138 @@ function initAddTaskHandlers() {
     });
 }
 
-// Show inline add task input
+// Show add task popup with full options
 function showAddTaskInput(type, button) {
-    // Check if already showing input
-    if (button.previousElementSibling?.classList.contains('add-task-input')) {
-        return;
-    }
+    showAddTaskPopup(type);
+}
 
-    const inputContainer = document.createElement('div');
-    inputContainer.className = 'task-item add-task-input';
-    inputContainer.innerHTML = `
-        <div class="task-checkbox" style="visibility: hidden;"></div>
-        <div class="task-content">
-            <input type="text" class="task-title-input" placeholder="What needs to be done?" autofocus />
+function showAddTaskPopup(type) {
+    // Close any existing popup
+    document.querySelectorAll('.add-task-popup-overlay').forEach(p => p.remove());
+
+    const today = typeof toLocalDateString === 'function' ? toLocalDateString(new Date()) : new Date().toISOString().split('T')[0];
+
+    const overlay = document.createElement('div');
+    overlay.className = 'add-task-popup-overlay';
+    overlay.innerHTML = `
+        <div class="add-task-popup">
+            <div class="add-task-popup-header">
+                <h3>Add ${type === 'work' ? 'Work' : 'Personal'} Task</h3>
+                <button class="add-task-popup-close">&times;</button>
+            </div>
+            <div class="add-task-popup-body">
+                <input type="text" class="add-task-popup-title" placeholder="What needs to be done?" autofocus />
+
+                <div class="add-task-popup-row">
+                    <label>Due Date</label>
+                    <div class="add-task-popup-date-row">
+                        <input type="date" class="add-task-popup-date" value="" />
+                        <button class="add-task-popup-quick-date" data-days="0">Today</button>
+                        <button class="add-task-popup-quick-date" data-days="1">Tomorrow</button>
+                        <button class="add-task-popup-quick-date" data-days="7">+1 Week</button>
+                    </div>
+                </div>
+
+                <div class="add-task-popup-row">
+                    <label>Recurring</label>
+                    <div class="add-task-popup-options">
+                        <button class="add-task-popup-option" data-value="">None</button>
+                        <button class="add-task-popup-option" data-value="daily">Daily</button>
+                        <button class="add-task-popup-option" data-value="weekdays">Weekdays</button>
+                        <button class="add-task-popup-option" data-value="weekly">Weekly</button>
+                        <button class="add-task-popup-option" data-value="monthly">Monthly</button>
+                    </div>
+                </div>
+
+                <div class="add-task-popup-row">
+                    <label>Category</label>
+                    <div class="add-task-popup-options">
+                        <button class="add-task-popup-option active" data-cat="today">Today</button>
+                        <button class="add-task-popup-option" data-cat="thisWeek">This Week</button>
+                        <button class="add-task-popup-option" data-cat="nextWeek">Next Week</button>
+                        <button class="add-task-popup-option" data-cat="backburner">Backburner</button>
+                    </div>
+                </div>
+            </div>
+            <div class="add-task-popup-footer">
+                <button class="add-task-popup-cancel">Cancel</button>
+                <button class="add-task-popup-save">Add Task</button>
+            </div>
         </div>
     `;
 
-    button.before(inputContainer);
+    document.body.appendChild(overlay);
 
-    const input = inputContainer.querySelector('input');
-    input.focus();
+    const popup = overlay.querySelector('.add-task-popup');
+    const titleInput = popup.querySelector('.add-task-popup-title');
+    const dateInput = popup.querySelector('.add-task-popup-date');
+    let selectedRecurring = '';
+    let selectedCategory = 'today';
 
+    titleInput.focus();
+
+    // Quick date buttons
+    popup.querySelectorAll('.add-task-popup-quick-date').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const days = parseInt(btn.dataset.days);
+            const date = new Date();
+            date.setDate(date.getDate() + days);
+            dateInput.value = typeof toLocalDateString === 'function' ? toLocalDateString(date) : date.toISOString().split('T')[0];
+        });
+    });
+
+    // Recurring option buttons
+    popup.querySelectorAll('.add-task-popup-option[data-value]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            popup.querySelectorAll('.add-task-popup-option[data-value]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedRecurring = btn.dataset.value;
+        });
+    });
+    // Set "None" as default active
+    popup.querySelector('.add-task-popup-option[data-value=""]').classList.add('active');
+
+    // Category option buttons
+    popup.querySelectorAll('.add-task-popup-option[data-cat]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            popup.querySelectorAll('.add-task-popup-option[data-cat]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedCategory = btn.dataset.cat;
+        });
+    });
+
+    // Close handlers
+    const closePopup = () => overlay.remove();
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closePopup();
+    });
+    popup.querySelector('.add-task-popup-close').addEventListener('click', closePopup);
+    popup.querySelector('.add-task-popup-cancel').addEventListener('click', closePopup);
+
+    // Save handler
     const saveTask = async () => {
-        const title = input.value.trim();
-        inputContainer.remove();
-
-        if (title) {
-            await addTask(type, title);
+        const title = titleInput.value.trim();
+        if (!title) {
+            titleInput.focus();
+            return;
         }
+
+        const options = {
+            category: selectedCategory,
+            dueDate: dateInput.value || null,
+            recurring: selectedRecurring || null,
+            recurringPattern: selectedRecurring || null
+        };
+
+        closePopup();
+        await addTask(type, title, options);
     };
 
-    input.addEventListener('blur', saveTask);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            input.blur();
-        } else if (e.key === 'Escape') {
-            inputContainer.remove();
-        }
+    popup.querySelector('.add-task-popup-save').addEventListener('click', saveTask);
+    titleInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveTask();
+        if (e.key === 'Escape') closePopup();
     });
 }
 
@@ -405,44 +501,7 @@ function initMobileNav() {
 
 // Show mobile add task input
 function showMobileAddTask(type, button) {
-    // Check if already showing input
-    const existingInput = button.previousElementSibling?.querySelector('.mobile-task-input');
-    if (existingInput) return;
-
-    const container = button.previousElementSibling;
-    if (!container) return;
-
-    const inputEl = document.createElement('div');
-    inputEl.className = 'task-item mobile-task-input';
-    inputEl.innerHTML = `
-        <div class="task-checkbox" style="visibility: hidden;"></div>
-        <div class="task-content" style="flex: 1;">
-            <input type="text" class="task-title-input" placeholder="What needs to be done?" style="width: 100%; font-size: 15px; padding: 8px 0;" autofocus />
-        </div>
-    `;
-
-    container.appendChild(inputEl);
-
-    const input = inputEl.querySelector('input');
-    input.focus();
-
-    const saveTask = async () => {
-        const title = input.value.trim();
-        inputEl.remove();
-
-        if (title) {
-            await addTask(type, title);
-        }
-    };
-
-    input.addEventListener('blur', saveTask);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            input.blur();
-        } else if (e.key === 'Escape') {
-            inputEl.remove();
-        }
-    });
+    showAddTaskPopup(type);
 }
 
 // Update mobile user info
@@ -531,10 +590,7 @@ function initFAB() {
 
 // Quick add task from FAB
 function showQuickAddTask(type) {
-    const title = prompt(`Add ${type} task:`);
-    if (title && title.trim()) {
-        addTask(type, title.trim());
-    }
+    showAddTaskPopup(type);
 }
 
 // Dark Mode

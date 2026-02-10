@@ -134,7 +134,7 @@ async function createNextRecurrence(task) {
 
 // Calculate next recurrence date
 function calculateNextRecurrence(pattern, currentDate) {
-    const date = currentDate ? new Date(currentDate) : new Date();
+    const date = currentDate ? parseLocalDate(currentDate) : new Date();
 
     switch (pattern) {
         case 'daily':
@@ -150,7 +150,7 @@ function calculateNextRecurrence(pattern, currentDate) {
             date.setDate(date.getDate() + 1);
     }
 
-    return date.toISOString().split('T')[0];
+    return toLocalDateString(date);
 }
 
 // Delete a task
@@ -174,12 +174,12 @@ async function moveTask(taskId, newCategory) {
     if (newCategory === 'tomorrow') {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        newDueDate = tomorrow.toISOString().split('T')[0];
-        newCategory = 'today'; // Will show as "today" tomorrow
+        newDueDate = toLocalDateString(tomorrow);
+        newCategory = 'today';
     } else if (newCategory === 'nextWeek') {
         const nextWeek = new Date();
         nextWeek.setDate(nextWeek.getDate() + 7);
-        newDueDate = nextWeek.toISOString().split('T')[0];
+        newDueDate = toLocalDateString(nextWeek);
         newCategory = 'thisWeek';
     }
 
@@ -244,8 +244,7 @@ function getTasksByCategory(type, category) {
             }
             // Only show if due today or earlier (or no due date)
             if (task.dueDate) {
-                const dueDate = new Date(task.dueDate);
-                dueDate.setHours(0, 0, 0, 0);
+                const dueDate = parseLocalDate(task.dueDate);
                 return dueDate <= today;
             }
             return true;
@@ -256,8 +255,7 @@ function getTasksByCategory(type, category) {
 
         // Check due date for dynamic categorization using calendar weeks
         if (task.dueDate) {
-            const dueDate = new Date(task.dueDate);
-            dueDate.setHours(0, 0, 0, 0);
+            const dueDate = parseLocalDate(task.dueDate);
 
             // Get end of this week (Sunday)
             const endOfThisWeek = new Date(today);
@@ -303,8 +301,7 @@ function getTodayTasks(type) {
 
         // Include tasks due today or earlier, or tasks with category 'today'
         if (task.dueDate) {
-            const dueDate = new Date(task.dueDate);
-            dueDate.setHours(0, 0, 0, 0);
+            const dueDate = parseLocalDate(task.dueDate);
             return dueDate <= today;
         }
 
@@ -834,6 +831,19 @@ function renderMobileTasks() {
     }
 }
 
+// Date helpers - always use local time to avoid UTC timezone bugs
+function toLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function parseLocalDate(dateString) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+
 // Helper functions
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -843,12 +853,12 @@ function escapeHtml(text) {
 
 function isToday(dateString) {
     const today = new Date();
-    const date = new Date(dateString);
+    const date = parseLocalDate(dateString);
     return today.toDateString() === date.toDateString();
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
+    const date = parseLocalDate(dateString);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -878,7 +888,7 @@ function showDatePicker(taskId) {
 
     // Get current date for default value
     const today = new Date();
-    const currentDate = task.dueDate || today.toISOString().split('T')[0];
+    const currentDate = task.dueDate || toLocalDateString(today);
 
     popup.innerHTML = `
         <div class="date-picker-header">Set Due Date</div>
@@ -922,7 +932,7 @@ function showDatePicker(taskId) {
                 const days = parseInt(btn.dataset.days);
                 const date = new Date();
                 date.setDate(date.getDate() + days);
-                input.value = date.toISOString().split('T')[0];
+                input.value = toLocalDateString(date);
             }
         });
     });
