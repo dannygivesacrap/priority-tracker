@@ -45,6 +45,14 @@ function getTimePeriodRange(period) {
             start.setDate(1);
             start.setHours(0, 0, 0, 0);
             break;
+        case 'year':
+            start.setMonth(0, 1);
+            start.setHours(0, 0, 0, 0);
+            break;
+        case 'all':
+            start.setFullYear(2000, 0, 1);
+            start.setHours(0, 0, 0, 0);
+            break;
     }
 
     return { start, end: now };
@@ -56,6 +64,8 @@ function getPeriodLabel(period) {
         case 'day': return 'Today';
         case 'week': return 'This Week';
         case 'month': return 'This Month';
+        case 'year': return 'This Year';
+        case 'all': return 'All Time';
         default: return 'This Week';
     }
 }
@@ -112,6 +122,36 @@ function getDailyBreakdown(period) {
     return Object.values(days);
 }
 
+// Get monthly breakdown for year view
+function getMonthlyBreakdown(period) {
+    const { start, end } = getTimePeriodRange(period);
+    const allTasks = [...(tasks.work || []), ...(tasks.personal || [])];
+    const months = {};
+
+    // Initialize all months in range
+    const current = new Date(start);
+    current.setDate(1);
+    while (current <= end) {
+        const key = current.getFullYear() + '-' + String(current.getMonth() + 1).padStart(2, '0');
+        months[key] = { date: new Date(current), work: 0, personal: 0 };
+        current.setMonth(current.getMonth() + 1);
+    }
+
+    // Count completions per month
+    allTasks.forEach(task => {
+        if (!task.completed || !task.completedAt) return;
+        const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt);
+        if (completedDate < start || completedDate > end) return;
+
+        const key = completedDate.getFullYear() + '-' + String(completedDate.getMonth() + 1).padStart(2, '0');
+        if (months[key]) {
+            months[key][task.type]++;
+        }
+    });
+
+    return Object.values(months);
+}
+
 // Render analytics view
 function renderAnalytics() {
     renderDesktopAnalytics();
@@ -150,6 +190,8 @@ function buildAnalyticsHTML() {
             <button class="analytics-period-btn ${period === 'day' ? 'active' : ''}" data-period="day">Today</button>
             <button class="analytics-period-btn ${period === 'week' ? 'active' : ''}" data-period="week">This Week</button>
             <button class="analytics-period-btn ${period === 'month' ? 'active' : ''}" data-period="month">This Month</button>
+            <button class="analytics-period-btn ${period === 'year' ? 'active' : ''}" data-period="year">This Year</button>
+            <button class="analytics-period-btn ${period === 'all' ? 'active' : ''}" data-period="all">All Time</button>
         </div>
 
         <div class="analytics-stats-grid">
@@ -172,8 +214,43 @@ function buildAnalyticsHTML() {
         </div>
     `;
 
-    // Daily breakdown chart (skip for single-day view)
-    if (period !== 'day' && dailyBreakdown.length > 1) {
+    // Breakdown chart
+    if (period === 'year' || period === 'all') {
+        // Monthly breakdown for year/all-time views
+        const monthlyBreakdown = getMonthlyBreakdown(period);
+        if (monthlyBreakdown.length > 1) {
+            const maxMonthly = Math.max(...monthlyBreakdown.map(m => m.work + m.personal), 1);
+            html += `
+                <div class="analytics-section">
+                    <h4 class="analytics-section-title">Monthly Breakdown</h4>
+                    <div class="analytics-chart">
+                        ${monthlyBreakdown.map(month => {
+                            const total = month.work + month.personal;
+                            const workHeight = (month.work / maxMonthly) * 100;
+                            const personalHeight = (month.personal / maxMonthly) * 100;
+                            const monthLabel = month.date.toLocaleDateString('en-US', { month: 'short' });
+                            const fullLabel = month.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                            return `
+                                <div class="analytics-chart-bar-group" title="${fullLabel}: ${total} tasks">
+                                    <div class="analytics-chart-bar-stack">
+                                        <div class="analytics-chart-bar work" style="height: ${workHeight}%"></div>
+                                        <div class="analytics-chart-bar personal" style="height: ${personalHeight}%"></div>
+                                    </div>
+                                    <div class="analytics-chart-label">${monthLabel}</div>
+                                    <div class="analytics-chart-count">${total || ''}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div class="analytics-chart-legend">
+                        <span class="analytics-legend-item"><span class="analytics-legend-dot work"></span> Work</span>
+                        <span class="analytics-legend-item"><span class="analytics-legend-dot personal"></span> Personal</span>
+                    </div>
+                </div>
+            `;
+        }
+    } else if (period !== 'day' && dailyBreakdown.length > 1) {
+        // Daily breakdown for week/month views
         html += `
             <div class="analytics-section">
                 <h4 class="analytics-section-title">Daily Breakdown</h4>
