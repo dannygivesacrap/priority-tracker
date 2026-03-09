@@ -108,7 +108,13 @@ async function completeTask(taskId, type) {
 
 // Create next occurrence of recurring task (silently, no toast)
 async function createNextRecurrence(task) {
-    const nextDate = calculateNextRecurrence(task.recurring, task.dueDate);
+    // If task is overdue, base next occurrence on today (not the missed date)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const baseDate = task.dueDate && parseLocalDate(task.dueDate) >= today
+        ? task.dueDate
+        : toLocalDateString(today);
+    const nextDate = calculateNextRecurrence(task.recurring, baseDate);
     const userDoc = getUserDoc();
 
     const newTask = {
@@ -189,6 +195,13 @@ async function moveTask(taskId, newCategory) {
     });
 
     showToast(`Task moved to ${formatCategory(newCategory)}`);
+}
+
+// Toggle today priority on a task
+async function toggleTaskPriority(taskId, type) {
+    const task = tasks[type].find(t => t.id === taskId);
+    if (!task) return;
+    await updateTask(taskId, { todayPriority: !task.todayPriority });
 }
 
 // Set task as recurring
@@ -279,8 +292,9 @@ function getTasksByCategory(type, category) {
         // No dueDate - use task.category
         return task.category === category;
     }).sort((a, b) => {
-        // Uncompleted tasks first, completed tasks below
+        // Uncompleted first, then priority, then order
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        if (!!a.todayPriority !== !!b.todayPriority) return a.todayPriority ? -1 : 1;
         return (a.order || 0) - (b.order || 0);
     });
 }
@@ -311,8 +325,9 @@ function getTodayTasks(type) {
 
         return task.category === 'today';
     }).sort((a, b) => {
-        // Uncompleted tasks first, completed tasks below
+        // Uncompleted first, then priority, then order
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        if (!!a.todayPriority !== !!b.todayPriority) return a.todayPriority ? -1 : 1;
         return (a.order || 0) - (b.order || 0);
     });
 }
@@ -446,6 +461,14 @@ function renderTaskList(container, taskList, type) {
         });
     });
 
+    container.querySelectorAll('.task-priority-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const taskItem = btn.closest('.task-item');
+            toggleTaskPriority(taskItem.dataset.taskId, taskItem.dataset.type);
+        });
+    });
+
     container.querySelectorAll('.task-action-btn[data-action="focus"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -491,22 +514,29 @@ function createTaskHTML(task, type) {
     const priorityTag = task.priorityId ? `<span class="task-tag">${getPriorityName(task.priorityId, type)}</span>` : '';
     const dueMeta = task.dueDate && !isToday(task.dueDate) ? `<span class="task-meta">\ud83d\udcc5 ${formatDate(task.dueDate)}</span>` : '';
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isOverdue = task.recurring && task.dueDate && !task.completed && parseLocalDate(task.dueDate) < today;
+    const overdueLabel = isOverdue ? `<span class="task-overdue">Overdue</span>` : '';
+
     // Different actions for completed vs active tasks
     const actions = task.completed
         ? `<button class="task-delete-btn" data-action="delete" title="Delete">\u2715</button>`
         : `<div class="task-actions">
+                <button class="task-action-btn task-priority-btn ${task.todayPriority ? 'priority-active' : ''}" data-action="priority" title="Mark as priority">&#9733;</button>
                 <button class="task-action-btn" data-action="focus" title="Focus">\u23f1</button>
                 <button class="task-action-btn" data-action="more" title="More">\u22ef</button>
            </div>`;
 
     return `
-        <div class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}" data-type="${type}" data-order="${task.order || 0}">
+        <div class="task-item ${task.completed ? 'completed' : ''} ${task.todayPriority ? 'priority-task' : ''}" data-task-id="${task.id}" data-type="${type}" data-order="${task.order || 0}">
             ${task.completed ? '' : '<span class="task-drag-handle">\u2630</span>'}
             <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
             <div class="task-content">
                 <span class="task-title ${task.completed ? 'completed' : ''}">${escapeHtml(task.title)}</span>
                 ${recurringIcon}
                 ${priorityTag}
+                ${overdueLabel}
                 ${dueMeta}
             </div>
             ${actions}

@@ -671,6 +671,32 @@ body {
     background: #f8f9ff;
 }
 
+/* ===== PRIORITY & OVERDUE ===== */
+.task-priority-btn {
+    color: #ccc;
+    font-size: 16px;
+}
+
+.task-priority-btn.priority-active {
+    color: #f97316;
+    border-color: #f97316;
+    background: #fff7ed;
+}
+
+.task-item.priority-task {
+    border-left: 3px solid #f97316;
+    background: rgba(249, 115, 22, 0.04);
+}
+
+.task-overdue {
+    font-size: 11px;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
 /* ===== ADD TASK BUTTON ===== */
 .add-task {
     padding: 10px 14px;
