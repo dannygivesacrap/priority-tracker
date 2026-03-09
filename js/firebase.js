@@ -51,19 +51,25 @@ async function signInWithGoogle() {
     provider.addScope('https://www.googleapis.com/auth/calendar.readonly');
 
     try {
-        const result = await auth.signInWithPopup(provider);
-        // Store the Google access token for Calendar API
-        if (result.credential) {
-            const token = result.credential.accessToken;
-            sessionStorage.setItem('googleAccessToken', token);
-        }
-        return result.user;
+        await auth.signInWithRedirect(provider);
     } catch (error) {
         console.error('Sign in error:', error);
         showToast('Sign in failed. Please try again.');
         throw error;
     }
 }
+
+// Handle redirect result on page load
+auth.getRedirectResult().then((result) => {
+    if (result && result.credential) {
+        const token = result.credential.accessToken;
+        sessionStorage.setItem('googleAccessToken', token);
+    }
+}).catch((error) => {
+    if (error.code !== 'auth/no-auth-event') {
+        console.error('Redirect result error:', error);
+    }
+});
 
 // Sign out
 async function signOut() {
